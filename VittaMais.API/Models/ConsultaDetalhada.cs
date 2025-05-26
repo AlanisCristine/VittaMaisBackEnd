@@ -1,0 +1,15 @@
+﻿namespace VittaMais.API.Models
+{
+    public class ConsultaDetalhada
+    {
+        public string Id { get; set; }
+        public string MedicoId { get; set; }
+        public string MedicoNome { get; set; }
+        public string PacienteId { get; set; }
+        public string PacienteNome { get; set; }
+        public string EspecialidadeId { get; set; }
+        public string EspecialidadeNome { get; set; }
+        public DateTime Data { get; set; }
+        public StatusConsulta Status { get; set; }
+    }
+}

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VittaMais.API", "VittaMais.API\VittaMais.API.csproj", "{23C591D2-B3BE-41C6-82AE-3248FD6DDDA2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23C591D2-B3BE-41C6-82AE-3248FD6DDDA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23C591D2-B3BE-41C6-82AE-3248FD6DDDA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23C591D2-B3BE-41C6-82AE-3248FD6DDDA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23C591D2-B3BE-41C6-82AE-3248FD6DDDA2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F99975B0-1963-44D2-8FB0-B6A9765F4D3E}
+	EndGlobalSection
+EndGlobal
