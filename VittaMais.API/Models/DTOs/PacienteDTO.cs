@@ -27,5 +27,7 @@ namespace VittaMais.API.Models.DTOs
         [Phone(ErrorMessage = "O telefone informado não é válido.")]
         public string Telefone { get; set; }
         public Endereco Endereco { get; set; }
+
+        public string? FotoPerfilUrl { get; set; }
     }
 }
