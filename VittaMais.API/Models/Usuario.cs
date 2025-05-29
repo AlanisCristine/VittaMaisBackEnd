@@ -41,5 +41,10 @@ namespace VittaMais.API.Models
 
         [JsonProperty("endereco")]
         public Endereco Endereco { get; set; }
+
+        [JsonProperty("FotoBase64")]
+        public string? FotoBase64 { get; set; }
+
+
     }
 }

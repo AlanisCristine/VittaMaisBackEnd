@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using VittaMais.API.Models;
 using VittaMais.API.Models.DTOs;
 
@@ -47,29 +48,33 @@ namespace VittaMais.API.Controllers
             }
         }
 
-        [HttpPost("cadastrar/paciente")]
-        public async Task<IActionResult> CadastrarPaciente([FromBody] PacienteDTO pacienteDto)
+
+        [HttpPost("cadastrar-paciente-com-foto")]
+        public async Task<IActionResult> CadastrarPacienteComFoto([FromForm] PacienteDTO dto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                var novoPaciente = new Usuario
+                {
+                    Nome = dto.Nome,
+                    Email = dto.Email,
+                    Senha = dto.Senha,
+                    Telefone = dto.Telefone,
+                    Cpf = dto.Cpf,
+                    DataNascimento = dto.DataNascimento,
+                    Endereco = dto.Endereco,
+                    Tipo = TipoUsuario.Paciente // Definido diretamente
+                };
+
+                var id = await _usuarioService.CadastrarUsuarioComFoto(dto.FotoPerfil, novoPaciente);
+                return Ok(new { id });
             }
-
-            var paciente = new Usuario
+            catch (Exception ex)
             {
-                Nome = pacienteDto.Nome,
-                Email = pacienteDto.Email,
-                Senha = pacienteDto.Senha,
-                Tipo = TipoUsuario.Paciente,
-                Cpf = pacienteDto.Cpf,
-                DataNascimento = pacienteDto.DataNascimento,
-                Telefone = pacienteDto.Telefone,
-                Endereco = pacienteDto.Endereco
-            };
-
-            var id = await _usuarioService.CadastrarUsuario(paciente);
-            return Ok(new { Message = "Paciente cadastrado com sucesso!", UsuarioId = id });
+                return BadRequest(new { erro = ex.Message });
+            }
         }
+
 
         [HttpPut("editar/paciente/{id}")]
         public async Task<IActionResult> EditarPaciente(string id, [FromBody] PacienteDTO pacienteDto)

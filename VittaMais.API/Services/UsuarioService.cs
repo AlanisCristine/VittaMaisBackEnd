@@ -46,6 +46,42 @@ namespace VittaMais.API.Services
             return usuarioId;
         }
 
+        public async Task<string> CadastrarUsuarioComFoto(IFormFile? imagem, Usuario usuario)
+        {
+            if (usuario.Tipo == TipoUsuario.Medico && string.IsNullOrEmpty(usuario.EspecialidadeId))
+                throw new Exception("Médicos precisam de uma especialidade.");
+
+            // Se veio imagem, converte para base64 e salva no campo FotoBase64
+            if (imagem != null && imagem.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await imagem.CopyToAsync(ms);
+                usuario.FotoBase64 = Convert.ToBase64String(ms.ToArray());
+            }
+
+            // Hash da senha
+            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(usuario.Senha);
+
+            // Posta o usuário sem ID ainda
+            var usuarioRef = await _firebase
+                .Child("usuarios")
+                .PostAsync(JsonConvert.SerializeObject(usuario));
+
+            // Pega o ID gerado
+            var usuarioId = usuarioRef.Key;
+
+            // Atualiza o objeto com ID
+            usuario.Id = usuarioId;
+
+            // Salva de novo com ID incluído
+            await _firebase
+                .Child("usuarios")
+                .Child(usuarioId)
+                .PutAsync(JsonConvert.SerializeObject(usuario));
+
+            return usuarioId;
+        }
+
 
         public async Task<Usuario?> Login(string email, string senha)
         {

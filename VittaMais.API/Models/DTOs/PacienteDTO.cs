@@ -28,6 +28,6 @@ namespace VittaMais.API.Models.DTOs
         public string Telefone { get; set; }
         public Endereco Endereco { get; set; }
 
-        public string? FotoPerfilUrl { get; set; }
+        public IFormFile? FotoPerfil { get; set; }
     }
 }
