@@ -1,8 +1,10 @@
-﻿using Firebase.Database;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Firebase.Database;
 using Firebase.Database.Query;
+using Firebase.Storage;
 using Newtonsoft.Json;
 using VittaMais.API.Models;
-using Firebase.Database.Query;
 using VittaMais.API.Models.DTOs;
 
 namespace VittaMais.API.Services
@@ -10,10 +12,17 @@ namespace VittaMais.API.Services
     public class UsuarioService
     {
         private readonly FirebaseClient _firebase;
-
+        private readonly Cloudinary _cloudinary;
         // Construtor que recebe o FirebaseService
         public UsuarioService(FirebaseService firebaseService)
         {
+            Account account = new Account(
+           "du4uvbmzy",         // Cloud Name
+           "925321576856996",   // API Key
+           "fDAJ9k_6GBrSc7zXnf4V050HjWU" // API Secret
+       );
+
+            _cloudinary = new Cloudinary(account);
             _firebase = firebaseService.GetDatabase();
         }
 
@@ -46,34 +55,53 @@ namespace VittaMais.API.Services
             return usuarioId;
         }
 
+        public async Task<string> UploadFotoAsync(IFormFile imagem)
+        {
+            if (imagem == null || imagem.Length == 0)
+                return null;
+
+            using var stream = imagem.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(imagem.FileName, stream),
+                Folder = "usuarios"  // opcional: pasta no Cloudinary
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return uploadResult.SecureUrl.ToString();  // URL pública da imagem
+            }
+            else
+            {
+                throw new Exception("Falha no upload da imagem para Cloudinary: " + uploadResult.Error.Message);
+            }
+        }
+
+
         public async Task<string> CadastrarUsuarioComFoto(IFormFile? imagem, Usuario usuario)
         {
             if (usuario.Tipo == TipoUsuario.Medico && string.IsNullOrEmpty(usuario.EspecialidadeId))
                 throw new Exception("Médicos precisam de uma especialidade.");
 
-            // Se veio imagem, converte para base64 e salva no campo FotoBase64
             if (imagem != null && imagem.Length > 0)
             {
-                using var ms = new MemoryStream();
-                await imagem.CopyToAsync(ms);
-                usuario.FotoBase64 = Convert.ToBase64String(ms.ToArray());
+                var urlFoto = await UploadFotoAsync(imagem);
+                usuario.FotoUrl = urlFoto;  // agora é uma URL, não base64
             }
 
-            // Hash da senha
             usuario.Senha = BCrypt.Net.BCrypt.HashPassword(usuario.Senha);
 
-            // Posta o usuário sem ID ainda
             var usuarioRef = await _firebase
                 .Child("usuarios")
                 .PostAsync(JsonConvert.SerializeObject(usuario));
 
-            // Pega o ID gerado
             var usuarioId = usuarioRef.Key;
 
-            // Atualiza o objeto com ID
             usuario.Id = usuarioId;
 
-            // Salva de novo com ID incluído
             await _firebase
                 .Child("usuarios")
                 .Child(usuarioId)
@@ -119,7 +147,6 @@ namespace VittaMais.API.Services
             return usuario;
         }
 
-
         public async Task<List<Usuario>> ListarUsuarios()
         {
             var usuarios = await _firebase
@@ -156,6 +183,7 @@ namespace VittaMais.API.Services
                 .Where(u => u.Tipo == TipoUsuario.Paciente)  // Filtra médicos
                 .ToList();
         }
+
         public async Task<bool> EditarPaciente(string id, PacienteDTO pacienteDto)
         {
             var usuarioRef = await _firebase

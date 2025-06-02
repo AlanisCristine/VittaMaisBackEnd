@@ -48,7 +48,6 @@ namespace VittaMais.API.Controllers
             }
         }
 
-
         [HttpPost("cadastrar-paciente-com-foto")]
         public async Task<IActionResult> CadastrarPacienteComFoto([FromForm] PacienteDTO dto)
         {
@@ -63,7 +62,7 @@ namespace VittaMais.API.Controllers
                     Cpf = dto.Cpf,
                     DataNascimento = dto.DataNascimento,
                     Endereco = dto.Endereco,
-                    Tipo = TipoUsuario.Paciente // Definido diretamente
+                    Tipo = TipoUsuario.Paciente
                 };
 
                 var id = await _usuarioService.CadastrarUsuarioComFoto(dto.FotoPerfil, novoPaciente);
