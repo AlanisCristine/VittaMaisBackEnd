@@ -19,6 +19,7 @@ namespace VittaMais.API.Controllers
             _usuarioService = usuarioService;
         }
 
+
         [HttpPost("cadastrar")]
         public async Task<IActionResult> CadastrarUsuario([FromBody] Usuario usuario)
         {
@@ -48,6 +49,7 @@ namespace VittaMais.API.Controllers
             }
         }
 
+
         [HttpPost("cadastrar-paciente-com-foto")]
         public async Task<IActionResult> CadastrarPacienteComFoto([FromForm] PacienteDTO dto)
         {
@@ -75,20 +77,19 @@ namespace VittaMais.API.Controllers
         }
 
 
-        [HttpPut("editar/paciente/{id}")]
-        public async Task<IActionResult> EditarPaciente(string id, [FromBody] PacienteDTO pacienteDto)
+        [HttpPut("Atualizar-paciente-pelo-{id}")]
+        public async Task<IActionResult> AtualizarDadosBasicos(string id, [FromBody] AtualizarDadosPacienteDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var atualizado = await _usuarioService.EditarPaciente(id, pacienteDto);
-
-            if (!atualizado)
-                return NotFound("Paciente não encontrado ou não é um paciente.");
-
-            return Ok(new { Message = "Dados do paciente atualizados com sucesso!" });
+            try
+            {
+                await _usuarioService.AtualizarDadosBasicosAsync(id, dto);
+                return Ok(new { mensagem = "Dados atualizados com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao atualizar dados.", erro = ex.Message });
+            }
         }
-
 
 
         [HttpPost("cadastrar/medico")]
@@ -107,6 +108,7 @@ namespace VittaMais.API.Controllers
             return Ok(new { Message = "Médico cadastrado com sucesso!", UsuarioId = id });
         }
 
+
         [HttpPost("cadastrar/diretor")]
         public async Task<IActionResult> CadastrarDiretor([FromBody] DiretorDTO diretorDto)
         {
@@ -122,6 +124,7 @@ namespace VittaMais.API.Controllers
             return Ok(new { Message = "Diretor cadastrado com sucesso!", UsuarioId = id });
         }
 
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Models.DTOs.LoginRequest request)
         {
@@ -133,12 +136,14 @@ namespace VittaMais.API.Controllers
             return Ok(new { Message = "Login bem-sucedido!", Usuario = usuario });
         }
 
+
         [HttpGet("listar")]
         public async Task<IActionResult> ListarUsuarios()
         {
             var usuarios = await _usuarioService.ListarUsuarios();
             return Ok(usuarios);
         }
+
 
         [HttpGet("listar-medicos")]
         public async Task<IActionResult> ListarMedicos()

@@ -184,36 +184,38 @@ namespace VittaMais.API.Services
                 .ToList();
         }
 
-        public async Task<bool> EditarPaciente(string id, PacienteDTO pacienteDto)
+        public async Task<Usuario> BuscarPorIdAsync(string id)
         {
-            var usuarioRef = await _firebase
-                .Child("usuarios")
+            var usuario = await _firebase
+                .Child("Usuarios")
                 .Child(id)
                 .OnceSingleAsync<Usuario>();
 
-            if (usuarioRef == null || usuarioRef.Tipo != TipoUsuario.Paciente)
-                return false;
+            return usuario != null ? usuario : null;
+        }
 
-            // Atualiza os dados permitidos
-            usuarioRef.Nome = pacienteDto.Nome;
-            usuarioRef.Cpf = pacienteDto.Cpf;
-            usuarioRef.DataNascimento = pacienteDto.DataNascimento;
-            usuarioRef.Telefone = pacienteDto.Telefone;
-            usuarioRef.Endereco = pacienteDto.Endereco;
-
-            // Atualiza senha apenas se vier preenchida
-            if (!string.IsNullOrWhiteSpace(pacienteDto.Senha))
+        public async Task AtualizarDadosBasicosAsync(string id, AtualizarDadosPacienteDto dto)
+        {
+            // Cria um novo objeto com os dados atualizados
+            var usuarioAtualizado = new Usuario
             {
-                usuarioRef.Senha = BCrypt.Net.BCrypt.HashPassword(pacienteDto.Senha);
-            }
+                Nome = dto.Nome,
+                Email = dto.Email,
+                Endereco = dto.Endereco,
+                Cpf = dto.Cpf,
+                Telefone = dto.Telefone,
+                DataNascimento = dto.DataNascimento
+              
+            };
 
+            // Atualiza diretamente no Firebase usando o ID conhecido
             await _firebase
                 .Child("usuarios")
                 .Child(id)
-                .PutAsync(JsonConvert.SerializeObject(usuarioRef));
-
-            return true;
+                .PutAsync(usuarioAtualizado);
         }
+
+
     }
 }
 
