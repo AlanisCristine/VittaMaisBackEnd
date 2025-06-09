@@ -13,6 +13,8 @@ namespace VittaMais.API.Services
     {
         private readonly FirebaseClient _firebase;
         private readonly Cloudinary _cloudinary;
+       
+
         // Construtor que recebe o FirebaseService
         public UsuarioService(FirebaseService firebaseService)
         {
@@ -196,25 +198,105 @@ namespace VittaMais.API.Services
 
         public async Task AtualizarDadosBasicosAsync(string id, AtualizarDadosPacienteDto dto)
         {
-            // Cria um novo objeto com os dados atualizados
-            var usuarioAtualizado = new Usuario
-            {
-                Nome = dto.Nome,
-                Email = dto.Email,
-                Endereco = dto.Endereco,
-                Cpf = dto.Cpf,
-                Telefone = dto.Telefone,
-                DataNascimento = dto.DataNascimento
-              
-            };
+            var usuarioExistente = await _firebase
+                .Child("usuarios")
+                .Child(id)
+                .OnceSingleAsync<Usuario>();
 
-            // Atualiza diretamente no Firebase usando o ID conhecido
+            if (usuarioExistente == null)
+                throw new Exception("Usuário não encontrado.");
+
+            // Atualiza apenas os campos recebidos
+            usuarioExistente.Nome = dto.Nome;
+            usuarioExistente.Email = dto.Email;
+            usuarioExistente.Endereco = dto.Endereco;
+            usuarioExistente.Cpf = dto.Cpf;
+            usuarioExistente.Telefone = dto.Telefone;
+            usuarioExistente.DataNascimento = dto.DataNascimento;
+            // os campos como Id, Senha, FotoUrl, etc. são preservados
+
             await _firebase
                 .Child("usuarios")
                 .Child(id)
-                .PutAsync(usuarioAtualizado);
+                .PutAsync(usuarioExistente);
         }
 
+        public async Task AtualizarFotoPerfilAsync(string id, IFormFile foto)
+        {
+            // Buscar usuário no Firebase
+            var usuario = await _firebase
+                .Child("usuarios")
+                .Child(id)
+                .OnceSingleAsync<Usuario>();
+
+            if (usuario == null)
+                throw new Exception("Usuário não encontrado.");
+
+            // Upload para Cloudinary
+            using var stream = foto.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(foto.FileName, stream),
+                PublicId = $"usuarios/{id}_foto", // usa o ID do usuário para manter a imagem única
+                Overwrite = true
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            // Atualiza a URL da foto no objeto do Firebase
+            usuario.FotoUrl = uploadResult.SecureUrl.ToString();
+
+            // Atualiza no Firebase
+            await _firebase
+                .Child("usuarios")
+                .Child(id)
+                .PutAsync(usuario);
+        }
+
+        public async Task SolicitarRecuperacaoSenhaAsync(string email)
+        {
+            // 1. Buscar usuário
+            var usuarios = await _firebase.Child("usuarios").OnceAsync<Usuario>();
+            var usuario = usuarios.FirstOrDefault(u => u.Object.Email == email);
+
+            if (usuario == null)
+                throw new Exception("E-mail não encontrado.");
+
+            // 2. Criar token
+            var token = Guid.NewGuid().ToString();
+            var tokenInfo = new TokenRecuperacaoSenha
+            {
+                Token = token,
+                UsuarioId = usuario.Key,
+                CriadoEm = DateTime.UtcNow,
+                Usado = false
+            };
+
+            await _firebase.Child("tokens_recuperacao").Child(token).PutAsync(tokenInfo);
+
+            // 3. Montar link com token
+            var link = $"https://seusite.com/recuperar-senha?token={token}";
+
+            // 4. E-mail HTML estilizado
+            string emailHtml = $@"
+        <html>
+            <body style='font-family: Arial; background-color: #f6f6f6; padding: 20px;'>
+                <div style='max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px;'>
+                    <h2 style='color: #2b7bff;'>Recuperação de Senha - Vitta+</h2>
+                    <p>Olá <strong>{usuario.Object.Nome}</strong>,</p>
+                    <p>Você solicitou a recuperação de senha. Clique no botão abaixo para redefinir:</p>
+                    <a href='{link}' style='background-color: #2b7bff; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block;'>Redefinir senha</a>
+                    <p style='margin-top: 20px;'>Se você não solicitou isso, ignore este e-mail.</p>
+                    <p style='color: gray; font-size: 12px;'>Válido por 30 minutos.</p>
+                </div>
+            </body>
+        </html>
+    ";
+
+            // 5. Enviar com Brevo
+            await _emailService.EnviarEmailAsync(email, "Recuperação de Senha - Vitta+", emailHtml, true); // true = isHtml
+        }
 
     }
 }

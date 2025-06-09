@@ -91,6 +91,20 @@ namespace VittaMais.API.Controllers
             }
         }
 
+        [HttpPut("Atualizar-Foto-Paciente-Pelo{id}")]
+        public async Task<IActionResult> AtualizarFotoPerfil(string id, IFormFile fotoPerfil)
+        {
+            try
+            {
+                await _usuarioService.AtualizarFotoPerfilAsync(id, fotoPerfil);
+                return Ok(new { mensagem = "Foto de perfil atualizada com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
+            }
+        }
+
 
         [HttpPost("cadastrar/medico")]
         public async Task<IActionResult> CadastrarMedico([FromBody] MedicoDTO medicoDto)
