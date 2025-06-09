@@ -13,10 +13,12 @@ namespace VittaMais.API.Services
     {
         private readonly FirebaseClient _firebase;
         private readonly Cloudinary _cloudinary;
-       
+        private readonly EmailService _emailService;
+        private readonly List<TokenRecuperacao> _tokens = new();
+
 
         // Construtor que recebe o FirebaseService
-        public UsuarioService(FirebaseService firebaseService)
+        public UsuarioService(FirebaseService firebaseService, EmailService emailService)
         {
             Account account = new Account(
            "du4uvbmzy",         // Cloud Name
@@ -26,6 +28,7 @@ namespace VittaMais.API.Services
 
             _cloudinary = new Cloudinary(account);
             _firebase = firebaseService.GetDatabase();
+            _emailService = emailService;
         }
 
         public async Task<string> CadastrarUsuario(Usuario usuario)
@@ -295,9 +298,65 @@ namespace VittaMais.API.Services
     ";
 
             // 5. Enviar com Brevo
-            await _emailService.EnviarEmailAsync(email, "Recuperação de Senha - Vitta+", emailHtml, true); // true = isHtml
+            //await _emailService.EnviarEmailAsync(email, "Recuperação de Senha - Vitta+", emailHtml, true);  true = isHtml
         }
 
+        public async Task<bool> EnviarTokenRecuperacaoAsync(string email)
+        {
+            try
+            {
+                // 1. Verificar se usuário existe
+                var usuario = await BuscarUsuarioPorEmail(email);
+
+                // 2. Gerar token
+                var token = Guid.NewGuid().ToString();
+
+                // 3. Salvar token
+                _tokens.Add(new TokenRecuperacao
+                {
+                    Email = email,
+                    Token = token,
+                    Expiracao = DateTime.UtcNow.AddHours(1),
+                    Usado = false
+                });
+
+                // 4. Criar link e corpo do email
+                var link = $"http://localhost:5173/redefinir-senha?email={email}&token={token}";
+
+                var corpoHtml = $"<p>Para redefinir sua senha, clique no link abaixo:</p><a href='{link}'>Redefinir senha</a>";
+
+                // 5. Enviar email
+                return await _emailService.EnviarEmailAsync(email, "Recuperação de senha", corpoHtml);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao recuperar senha: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Implemente o BuscarUsuarioPorEmail conforme seu Firebase
+        public async Task<Usuario> BuscarUsuarioPorEmail(string email)
+        {
+            var usuariosFirebase = await _firebase
+                .Child("usuarios")
+                .OnceAsync<Usuario>();
+
+            var usuarioEncontrado = usuariosFirebase
+                .Select(x => x.Object)
+                .FirstOrDefault(u => u.Email.Trim().ToLower() == email.Trim().ToLower());
+
+            if (usuarioEncontrado == null)
+                throw new Exception("Email não encontrado.");
+
+            return usuarioEncontrado;
+        }
+
+
+
+        // Também terá método para validar token e alterar senha depois
     }
+
 }
+
 

@@ -7,6 +7,7 @@ builder.Services.AddScoped<FirebaseService>();
 builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<EspecialidadeService>();
+builder.Services.AddScoped<EmailService>();
 
 
 // Registrar outros serviços

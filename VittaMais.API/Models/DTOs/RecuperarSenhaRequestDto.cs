@@ -1,6 +1,6 @@
 ﻿namespace VittaMais.API.Models.DTOs
 {
-    public class EsqueciSenhaRequestDto
+    public class RecuperarSenhaRequestDto
     {
         public string Email { get; set; }
     }

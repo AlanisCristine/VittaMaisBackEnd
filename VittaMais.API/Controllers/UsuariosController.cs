@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Globalization;
 using VittaMais.API.Models;
 using VittaMais.API.Models.DTOs;
 
@@ -159,6 +160,13 @@ namespace VittaMais.API.Controllers
         }
 
 
+        [HttpGet("listar-usuarios-por-email")]
+        public async Task<IActionResult> ListarUsuariosPorEmail( string email)
+        {
+            var usuarios = await _usuarioService.BuscarUsuarioPorEmail(email);
+            return Ok(usuarios);
+        }
+
         [HttpGet("listar-medicos")]
         public async Task<IActionResult> ListarMedicos()
         {
@@ -185,5 +193,16 @@ namespace VittaMais.API.Controllers
 
             return Ok(pacientes);
         }
+
+        [HttpPost("recuperar-senha")]
+        public async Task<IActionResult> RecuperarSenha([FromBody] RecuperarSenhaRequestDto dto)
+        {
+            var sucesso = await _usuarioService.EnviarTokenRecuperacaoAsync(dto.Email);
+            if (!sucesso)
+                return BadRequest(new { mensagem = "Não foi possível enviar o email de recuperação." });
+
+            return Ok(new { mensagem = "Token de recuperação enviado com sucesso." });
+        }
+
     }
 }
