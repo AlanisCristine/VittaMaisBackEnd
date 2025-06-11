@@ -4,13 +4,19 @@ using BrevoConfiguration = brevo_csharp.Client.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using brevo_csharp.Client;
 
 namespace VittaMais.API.Services
 {
     public class EmailService
     {
-        private readonly string _apiKey = "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";
+        private readonly string _apiKey;
 
+        public EmailService(IConfiguration configuration)
+        {
+            _apiKey = configuration["Brevo:ApiKey"];
+            Console.WriteLine(">>> API KEY LIDA: " + _apiKey);
+        }
         public async Task<bool> EnviarEmailAsync(string paraEmail, string assunto, string corpoHtml)
         {
             try
@@ -38,11 +44,14 @@ namespace VittaMais.API.Services
 
                 return true;
             }
-            catch (Exception ex)
+            catch (brevo_csharp.Client.ApiException ex)
             {
-                Console.WriteLine("Erro ao enviar email: " + ex.Message);
+                Console.WriteLine("❌ Erro completo:");
+                Console.WriteLine(ex.ToString());
                 return false;
             }
+
+
         }
     }
 }

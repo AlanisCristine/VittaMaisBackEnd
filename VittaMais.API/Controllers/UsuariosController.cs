@@ -78,7 +78,7 @@ namespace VittaMais.API.Controllers
         }
 
 
-        [HttpPut("Atualizar-paciente-pelo-{id}")]
+        [HttpPut("Atualizar-paciente-pelo/{id}")]
         public async Task<IActionResult> AtualizarDadosBasicos(string id, [FromBody] AtualizarDadosPacienteDto dto)
         {
             try
@@ -92,7 +92,8 @@ namespace VittaMais.API.Controllers
             }
         }
 
-        [HttpPut("Atualizar-Foto-Paciente-Pelo{id}")]
+
+        [HttpPut("Atualizar-Foto-Paciente/{id}")]
         public async Task<IActionResult> AtualizarFotoPerfil(string id, IFormFile fotoPerfil)
         {
             try
