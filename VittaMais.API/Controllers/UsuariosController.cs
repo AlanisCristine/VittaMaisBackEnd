@@ -77,6 +77,35 @@ namespace VittaMais.API.Controllers
             }
         }
 
+        [HttpPost("cadastrar-medico-com-foto")]
+        public async Task<IActionResult> CadastrarMédicoComFoto([FromForm] MedicoDTO dto)
+        {
+            if (!dto.DataNascimento.HasValue)
+                return BadRequest(new { erro = "Data de nascimento é obrigatória." });
+            try
+            {
+                var novoMedico = new Usuario
+                {
+                    Nome = dto.Nome,
+                    Email = dto.Email,
+                    Senha = dto.Senha,
+                    EspecialidadeId = dto.EspecialidadeId,
+                    Telefone = dto.Telefone,
+                    Cpf = dto.Cpf,
+                    DataNascimento = dto.DataNascimento.Value,
+                    Endereco = dto.Endereco,
+                    Tipo = TipoUsuario.Medico
+                }; 
+
+                var id = await _usuarioService.CadastrarUsuarioComFoto(dto.FotoPerfil, novoMedico);
+                return Ok(new { id });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { erro = ex.Message });
+            }
+        }
+
 
         [HttpPut("Atualizar-paciente-pelo/{id}")]
         public async Task<IActionResult> AtualizarDadosBasicos(string id, [FromBody] AtualizarDadosPacienteDto dto)
@@ -158,6 +187,17 @@ namespace VittaMais.API.Controllers
         {
             var usuarios = await _usuarioService.ListarUsuarios();
             return Ok(usuarios);
+        }
+
+        [HttpGet("Listar-por/{id}")]
+        public async Task<IActionResult> GetUsuarioById(string id)
+        {
+            var usuario = await _usuarioService.BuscarPorIdAsync(id);
+
+            if (usuario == null)
+                return NotFound();
+
+            return Ok(usuario);
         }
 
 

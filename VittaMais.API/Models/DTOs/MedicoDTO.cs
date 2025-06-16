@@ -22,7 +22,7 @@ namespace VittaMais.API.Models.DTOs
         // Campos opcionais (não obrigatório, sem [Required])
         [StringLength(14, ErrorMessage = "CPF deve ter até 14 caracteres.")]
         public string? Cpf { get; set; }
-
+        [Required]
         public DateTime? DataNascimento { get; set; }
 
         [StringLength(20, ErrorMessage = "Telefone deve ter até 20 caracteres.")]
@@ -30,6 +30,6 @@ namespace VittaMais.API.Models.DTOs
 
         public Endereco Endereco { get; set; }
 
-        public string? FotoPerfilUrl { get; set; }
+        public IFormFile? FotoPerfil { get; set; }
     }
 }

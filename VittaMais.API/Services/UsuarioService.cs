@@ -192,12 +192,13 @@ namespace VittaMais.API.Services
         public async Task<Usuario> BuscarPorIdAsync(string id)
         {
             var usuario = await _firebase
-                .Child("Usuarios")
+                .Child("usuarios")
                 .Child(id)
                 .OnceSingleAsync<Usuario>();
 
             return usuario != null ? usuario : null;
         }
+       
 
         public async Task AtualizarDadosBasicosAsync(string id, AtualizarDadosPacienteDto dto)
         {
