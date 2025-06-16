@@ -106,37 +106,6 @@ namespace VittaMais.API.Controllers
             }
         }
 
-
-        [HttpPut("Atualizar-paciente-pelo/{id}")]
-        public async Task<IActionResult> AtualizarDadosBasicos(string id, [FromBody] AtualizarDadosPacienteDto dto)
-        {
-            try
-            {
-                await _usuarioService.AtualizarDadosBasicosAsync(id, dto);
-                return Ok(new { mensagem = "Dados atualizados com sucesso." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { mensagem = "Erro ao atualizar dados.", erro = ex.Message });
-            }
-        }
-
-
-        [HttpPut("Atualizar-Foto-Paciente/{id}")]
-        public async Task<IActionResult> AtualizarFotoPerfil(string id, IFormFile fotoPerfil)
-        {
-            try
-            {
-                await _usuarioService.AtualizarFotoPerfilAsync(id, fotoPerfil);
-                return Ok(new { mensagem = "Foto de perfil atualizada com sucesso." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensagem = ex.Message });
-            }
-        }
-
-
         [HttpPost("cadastrar/medico")]
         public async Task<IActionResult> CadastrarMedico([FromBody] MedicoDTO medicoDto)
         {
@@ -181,6 +150,53 @@ namespace VittaMais.API.Controllers
             return Ok(new { Message = "Login bem-sucedido!", Usuario = usuario });
         }
 
+        [HttpPut("Atualizar-medico-pelo/{id}")]
+        public async Task<IActionResult> AtualizarDadosBasicosMedico(string id, [FromBody] AtualizarDadosMedicoDTO dto)
+        {
+            try
+            {
+                await _usuarioService.AtualizarDadosBasicosMedicoAsync(id, dto);
+                return Ok(new { mensagem = "Dados atualizados com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao atualizar dados.", erro = ex.Message });
+            }
+        }
+
+
+        [HttpPut("Atualizar-Foto-Paciente/{id}")]
+        public async Task<IActionResult> AtualizarFotoPerfil(string id, IFormFile fotoPerfil)
+        {
+            try
+            {
+                await _usuarioService.AtualizarFotoPerfilAsync(id, fotoPerfil);
+                return Ok(new { mensagem = "Foto de perfil atualizada com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
+            }
+        }
+
+       
+
+        [HttpPut("Atualizar-paciente-pelo/{id}")]
+        public async Task<IActionResult> AtualizarDadosBasicos(string id, [FromBody] AtualizarDadosPacienteDto dto)
+        {
+            try
+            {
+                await _usuarioService.AtualizarDadosBasicosAsync(id, dto);
+                return Ok(new { mensagem = "Dados atualizados com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao atualizar dados.", erro = ex.Message });
+            }
+        }
+
+
+
 
         [HttpGet("listar")]
         public async Task<IActionResult> ListarUsuarios()
@@ -222,8 +238,8 @@ namespace VittaMais.API.Controllers
         }
 
 
-        [HttpGet("listar-Pacientes")]
-        public async Task<IActionResult> ListarPacientes()
+       [HttpGet("listar-Pacientes")]
+       public async Task<IActionResult> ListarPacientes()
         {
             var pacientes = await _usuarioService.ListarPacientes();
 
@@ -235,15 +251,15 @@ namespace VittaMais.API.Controllers
             return Ok(pacientes);
         }
 
-        [HttpPost("recuperar-senha")]
-        public async Task<IActionResult> RecuperarSenha([FromBody] RecuperarSenhaRequestDto dto)
-        {
-            var sucesso = await _usuarioService.EnviarTokenRecuperacaoAsync(dto.Email);
-            if (!sucesso)
-                return BadRequest(new { mensagem = "Não foi possível enviar o email de recuperação." });
+        //[HttpPost("recuperar-senha")]
+        //public async Task<IActionResult> RecuperarSenha([FromBody] RecuperarSenhaRequestDto dto)
+        //{
+        //    var sucesso = await _usuarioService.EnviarTokenRecuperacaoAsync(dto.Email);
+        //    if (!sucesso)
+        //        return BadRequest(new { mensagem = "Não foi possível enviar o email de recuperação." });
 
-            return Ok(new { mensagem = "Token de recuperação enviado com sucesso." });
-        }
+        //    return Ok(new { mensagem = "Token de recuperação enviado com sucesso." });
+        //}
 
     }
 }
