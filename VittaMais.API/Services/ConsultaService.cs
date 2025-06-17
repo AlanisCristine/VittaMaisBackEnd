@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using VittaMais.API.Models;
+using VittaMais.API.Models.DTOs;
 
 namespace VittaMais.API.Services
 {
@@ -57,6 +58,27 @@ namespace VittaMais.API.Services
                 .PutAsync(JsonConvert.SerializeObject(consulta));
 
             return consulta.Id;
+        }
+
+        public async Task AtualizarConsulta(AtualizarConsultaDto dto)
+        {
+            // Busca consulta existente
+            var consultaRef = _firebaseService.GetDatabase()
+                .Child("consultas")
+                .Child(dto.Id);
+
+            var consultaExistente = await consultaRef.OnceSingleAsync<Consulta>();
+
+            if (consultaExistente == null)
+                throw new Exception("Consulta não encontrada.");
+
+            // Atualiza apenas os campos clínicos
+            consultaExistente.Diagnostico = dto.Diagnostico;
+            consultaExistente.Observacoes = dto.Observacoes;
+            consultaExistente.Remedios = dto.Remedios;
+
+            // Salva novamente
+            await consultaRef.PutAsync(JsonConvert.SerializeObject(consultaExistente));
         }
 
         public async Task<List<Consulta>> ListarConsultas()
@@ -226,6 +248,17 @@ namespace VittaMais.API.Services
 
             return consultasDoUsuario;
         }
+        public async Task<Consulta> ObterConsultaPorId(string id)
+        {
+            var consulta = await _firebaseService
+                .GetDatabase()
+                .Child("consultas")
+                .Child(id)
+                .OnceSingleAsync<Consulta>();
+
+            return consulta;
+        }
+
         public async Task<List<Consulta>> ListarConsultasPorData(DateTime data)
         {
             var db = _firebaseService.GetDatabase();

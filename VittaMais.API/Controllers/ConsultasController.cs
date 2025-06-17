@@ -61,7 +61,24 @@ namespace VittaMais.API.Controllers
             }
         }
 
+        [HttpPut("Atualizar-consulta")]
+        public async Task<IActionResult> AtualizarConsulta([FromBody] AtualizarConsultaDto dto)
+        {
+            if (dto == null || string.IsNullOrEmpty(dto.Id))
+            {
+                return BadRequest(new { mensagem = "Dados de atualização inválidos." });
+            }
 
+            try
+            {
+                await _consultaService.AtualizarConsulta(dto);
+                return Ok(new { mensagem = "Consulta atualizada com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao atualizar consulta.", erro = ex.Message });
+            }
+        }
 
         [HttpGet("listar-por-especialidade/{especialidadeId}")]
         public async Task<IActionResult> ListarPorEspecialidade(string especialidadeId)
@@ -93,6 +110,27 @@ namespace VittaMais.API.Controllers
         {
             var consultas = await _consultaService.ListarConsultasDetalhadasPorEspecialidade(especialidadeId);
             return Ok(consultas);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetConsultaPorId(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return BadRequest(new { mensagem = "ID da consulta é obrigatório." });
+
+            try
+            {
+                var consulta = await _consultaService.ObterConsultaPorId(id);
+
+                if (consulta == null)
+                    return NotFound(new { mensagem = "Consulta não encontrada." });
+
+                return Ok(consulta);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao buscar a consulta.", erro = ex.Message });
+            }
         }
 
 

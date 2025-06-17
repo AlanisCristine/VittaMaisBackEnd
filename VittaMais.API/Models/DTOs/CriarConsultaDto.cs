@@ -8,5 +8,8 @@
         public DateTime Data { get; set; }
         public StatusConsulta Status { get; set; }
         public string EspecialidadeId { get; set; }
+        public string Diagnostico { get; set; }
+        public string Observacoes { get; set; }
+        public string Remedios { get; set; }
     }
 }
