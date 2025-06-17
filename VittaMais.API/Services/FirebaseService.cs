@@ -1,4 +1,5 @@
 ﻿using Firebase.Database;
+using VittaMais.API.Models;
 
 namespace VittaMais.API.Services
 {
@@ -14,6 +15,10 @@ namespace VittaMais.API.Services
         public FirebaseClient GetDatabase()
         {
             return _firebaseClient;
+     
         }
+
+       
+
     }
 }

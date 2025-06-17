@@ -87,6 +87,20 @@ namespace VittaMais.API.Controllers
             return Ok(consultas);
         }
 
+        [HttpGet("historico-paciente/{usuarioId}")]
+        public async Task<IActionResult> ObterHistoricoPorPaciente(string usuarioId)
+        {
+            try
+            {
+                var resultado = await _consultaService.ObterConsultasPorUsuario(usuarioId);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao obter histórico: {ex.Message}");
+            }
+        }
+
 
         [HttpGet("listar-por-medico/{medicoId}")]
         public async Task<IActionResult> ListarPorMedico(string medicoId)

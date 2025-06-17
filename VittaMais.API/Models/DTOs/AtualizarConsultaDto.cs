@@ -7,5 +7,6 @@
         public string Diagnostico { get; set; }
         public string Observacoes { get; set; }
         public string Remedios { get; set; }
+        public StatusConsulta? Status { get; set; }
     }
 }

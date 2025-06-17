@@ -17,12 +17,12 @@ namespace VittaMais.API.Models
 
     }
 
-    public enum StatusConsulta
-    {
-        Agendada = 1,
-        Realizada = 2,
-        Cancelada = 3,
-        Pendente = 4
-    }
+        public enum StatusConsulta
+        {
+            Agendada = 1,
+            Realizada = 2,
+            Cancelada = 3,
+            Pendente = 4
+        }
 
 }

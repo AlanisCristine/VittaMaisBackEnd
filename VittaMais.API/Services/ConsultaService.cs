@@ -1,4 +1,5 @@
-﻿using Firebase.Database.Query;
+﻿using Firebase.Database;
+using Firebase.Database.Query;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -62,7 +63,6 @@ namespace VittaMais.API.Services
 
         public async Task AtualizarConsulta(AtualizarConsultaDto dto)
         {
-            // Busca consulta existente
             var consultaRef = _firebaseService.GetDatabase()
                 .Child("consultas")
                 .Child(dto.Id);
@@ -72,14 +72,36 @@ namespace VittaMais.API.Services
             if (consultaExistente == null)
                 throw new Exception("Consulta não encontrada.");
 
-            // Atualiza apenas os campos clínicos
+            // Atualiza campos clínicos
             consultaExistente.Diagnostico = dto.Diagnostico;
             consultaExistente.Observacoes = dto.Observacoes;
             consultaExistente.Remedios = dto.Remedios;
 
-            // Salva novamente
+            // Atualiza status para Realizada (2)
+            consultaExistente.Status = StatusConsulta.Realizada;
+
             await consultaRef.PutAsync(JsonConvert.SerializeObject(consultaExistente));
         }
+
+
+        //public async Task<List<Consulta>> ObterHistoricoPorPaciente(string pacienteId)
+        //{
+        //    var snapshot = await _firebaseService
+        //        .Child("consultas")
+        //        .OnceAsync<Consulta>();
+
+        //    var consultas = snapshot
+        //        .Select(item => {
+        //            var consulta = item.Object;
+        //            consulta.Id = item.Key;
+        //            return consulta;
+        //        })
+        //        .Where(c => c.PacienteId == pacienteId)
+        //        .OrderByDescending(c => c.DataConsulta) // opcional: ordenar por data
+        //        .ToList();
+
+        //    return consultas;
+        //}
 
         public async Task<List<Consulta>> ListarConsultas()
         {
@@ -205,15 +227,20 @@ namespace VittaMais.API.Services
         {
             var db = _firebaseService.GetDatabase();
 
-            // Pega o nome do paciente
-            var paciente = await db.Child("usuarios").Child(usuarioId).OnceSingleAsync<Usuario>();
+            // Pega o paciente
+            var paciente = await db
+                .Child("usuarios")
+                .Child(usuarioId)
+                .OnceSingleAsync<Usuario>();
+
             if (paciente == null)
                 return new { Mensagem = "Usuário não encontrado." };
 
             // Pega todas as consultas
-            var consultasSnapshot = await db.Child("consultas").OnceAsync<Consulta>();
+            var consultasSnapshot = await db
+                .Child("consultas")
+                .OnceAsync<Consulta>();
 
-            // Monta a lista com todos os dados
             var consultasDoUsuario = new List<object>();
 
             foreach (var consulta in consultasSnapshot)
@@ -223,19 +250,26 @@ namespace VittaMais.API.Services
                 if (c.PacienteId != usuarioId)
                     continue;
 
-                // Pega o nome do médico
-                var medico = await db.Child("usuarios").Child(c.MedicoId).OnceSingleAsync<Usuario>();
+                // Pega o médico
+                var medico = await db
+                    .Child("usuarios")
+                    .Child(c.MedicoId)
+                    .OnceSingleAsync<Usuario>();
+
                 var nomeMedico = medico?.Nome ?? "Médico não encontrado";
 
-                // Pega a especialidade do médico
+                // Pega a especialidade
                 string nomeEspecialidade = "Especialidade não encontrada";
                 if (!string.IsNullOrEmpty(medico?.EspecialidadeId))
                 {
-                    var especialidade = await db.Child("especialidades").Child(medico.EspecialidadeId).OnceSingleAsync<Especialidade>();
+                    var especialidade = await db
+                        .Child("especialidades")
+                        .Child(medico.EspecialidadeId)
+                        .OnceSingleAsync<Especialidade>();
+
                     nomeEspecialidade = especialidade?.Nome ?? nomeEspecialidade;
                 }
 
-                // Adiciona à lista
                 consultasDoUsuario.Add(new
                 {
                     NomePaciente = paciente.Nome,
@@ -248,6 +282,7 @@ namespace VittaMais.API.Services
 
             return consultasDoUsuario;
         }
+
         public async Task<Consulta> ObterConsultaPorId(string id)
         {
             var consulta = await _firebaseService
@@ -258,7 +293,6 @@ namespace VittaMais.API.Services
 
             return consulta;
         }
-
         public async Task<List<Consulta>> ListarConsultasPorData(DateTime data)
         {
             var db = _firebaseService.GetDatabase();
