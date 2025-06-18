@@ -276,7 +276,8 @@ namespace VittaMais.API.Services
                     Data = c.Data,
                     NomeMedico = nomeMedico,
                     Especialidade = nomeEspecialidade,
-                    Status = c.Status.ToString()
+                    Status = c.Status.ToString(),
+                    Remedios = c.Remedios
                 });
             }
 
