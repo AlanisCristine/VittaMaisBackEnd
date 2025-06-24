@@ -45,6 +45,14 @@ namespace VittaMais.API.Models
         [JsonProperty("fotoUrl")]
         public string? FotoUrl { get; set; }
 
+        [JsonProperty("estaAtuando")]
+        public bool EstaAtuando { get; set; } = true;
+
+        [JsonProperty("dataInicio")]
+        public DateTime DataInicio { get; set; } = DateTime.UtcNow; // seta quando cadastra
+
+        [JsonProperty("dataSaida")]
+        public DateTime? DataSaida { get; set; } // seta quando inativa
 
 
     }

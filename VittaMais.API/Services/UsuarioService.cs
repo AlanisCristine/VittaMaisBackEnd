@@ -250,6 +250,31 @@ namespace VittaMais.API.Services
                 .PutAsync(usuarioExistente);
         }
 
+        public async Task AtualizarDadosBasicosDiretorAsync(string id, AtualizarDadosDiretorDTO dto)
+        {
+            var usuarioExistente = await _firebase
+                .Child("usuarios")
+                .Child(id)
+                .OnceSingleAsync<Usuario>();
+
+            if (usuarioExistente == null)
+                throw new Exception("Usuário não encontrado.");
+
+            // Atualiza apenas os campos recebidos
+            usuarioExistente.Nome = dto.Nome;
+            usuarioExistente.Email = dto.Email;
+            usuarioExistente.Endereco = dto.Endereco;
+            usuarioExistente.Cpf = dto.Cpf;
+            usuarioExistente.Telefone = dto.Telefone;
+            usuarioExistente.DataNascimento = dto.DataNascimento.Value;
+            // os campos como Id, Senha, FotoUrl, etc. são preservados
+
+            await _firebase
+                .Child("usuarios")
+                .Child(id)
+                .PutAsync(usuarioExistente);
+        }
+
 
         public async Task AtualizarFotoPerfilAsync(string id, IFormFile foto)
         {
@@ -279,6 +304,14 @@ namespace VittaMais.API.Services
 
             // Atualiza no Firebase
             await _firebase
+                .Child("usuarios")
+                .Child(id)
+                .PutAsync(usuario);
+        }
+
+        public async Task AtualizarAsync(string id, Usuario usuario)
+        {
+               await _firebase
                 .Child("usuarios")
                 .Child(id)
                 .PutAsync(usuario);

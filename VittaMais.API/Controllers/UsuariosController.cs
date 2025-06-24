@@ -164,6 +164,19 @@ namespace VittaMais.API.Controllers
             }
         }
 
+        [HttpPut("Atualizar-Diretor-pelo/{id}")]
+        public async Task<IActionResult> AtualizarDadosBasicosDiretor(string id, [FromBody] AtualizarDadosDiretorDTO dto)
+        {
+            try
+            {
+                await _usuarioService.AtualizarDadosBasicosDiretorAsync(id, dto);
+                return Ok(new { mensagem = "Dados atualizados com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao atualizar dados.", erro = ex.Message });
+            }
+        }
 
         [HttpPut("Atualizar-Foto-Paciente/{id}")]
         public async Task<IActionResult> AtualizarFotoPerfil(string id, IFormFile fotoPerfil)
@@ -196,6 +209,18 @@ namespace VittaMais.API.Controllers
         }
 
 
+        [HttpPut("Inativar-Medico/{id}")]
+        public async Task<IActionResult> InativarMedico(string id)
+        {
+            var medico = await _usuarioService.BuscarPorIdAsync(id);
+            if (medico == null) return NotFound("Médico não encontrado.");
+
+            medico.EstaAtuando = false;
+            medico.DataSaida = DateTime.UtcNow;
+
+            await _usuarioService.AtualizarAsync(id, medico);
+            return Ok("Médico inativado com sucesso.");
+        }
 
 
         [HttpGet("listar")]
