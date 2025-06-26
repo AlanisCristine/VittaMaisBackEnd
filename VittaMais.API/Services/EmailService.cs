@@ -1,58 +1,56 @@
-﻿using brevo_csharp.Api;
-using brevo_csharp.Model;
-using BrevoConfiguration = brevo_csharp.Client.Configuration;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.Extensions.Options;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using brevo_csharp.Client;
+using VittaMais.API; // ou use: using Task = System.Threading.Tasks.Task;
 
-namespace VittaMais.API.Services
+public class EmailService
 {
-    public class EmailService
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
+
+    public EmailService(IOptions<BrevoSettings> brevoSettings)
     {
-        private readonly string _apiKey;
+        _apiKey = brevoSettings.Value.ApiKey;
 
-        public EmailService(IConfiguration configuration)
+        _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("api-key", _apiKey);
+    }
+
+    public async Task EnviarEmailConsultaAsync(string emailPaciente, string nomePaciente, string especialidade, string medico, DateTime dataConsulta)
+    {
+        var conteudoHtml = $@"
+        <h1><strong>Olá </strong>{nomePaciente}</h1>
+        <p>Estamos enviando esse email para a confirmação da consulta.</p>
+        <h3>Confirmação de Consulta</h3>
+        <p><strong>Paciente:</strong> {nomePaciente}</p>
+        <p><strong>Data:</strong> {dataConsulta:dd/MM/yyyy HH:mm}</p>
+        <p><strong>Especialidade:</strong> {especialidade}</p>
+        <p><strong>Médico:</strong> {medico}</p>
+        <p><strong>Aguardamos você!</strong></p>
+    ";
+
+        var emailObj = new
         {
-            _apiKey = configuration["Brevo:ApiKey"];
-            Console.WriteLine(">>> API KEY LIDA: " + _apiKey);
-        }
-        public async Task<bool> EnviarEmailAsync(string paraEmail, string assunto, string corpoHtml)
+            sender = new { name = "VivaBem", email = "vivabemclinicamed@gmail.com" },
+            to = new[] { new { email = emailPaciente, name = nomePaciente } },
+            subject = "Confirmação de Consulta - VivaBem",
+            htmlContent = conteudoHtml
+        };
+
+        var json = JsonSerializer.Serialize(emailObj);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync("https://api.brevo.com/v3/smtp/email", content);
+
+        if (!response.IsSuccessStatusCode)
         {
-            try
-            {
-                BrevoConfiguration.Default.ApiKey.Add("api-key", _apiKey);
-
-                var apiInstance = new TransactionalEmailsApi();
-
-                var email = new SendSmtpEmail
-                {
-                    Subject = assunto,
-                    HtmlContent = corpoHtml,
-                    Sender = new SendSmtpEmailSender
-                    {
-                        Name = "Viva Bem",
-                        Email = "alanisalmeidads@gmail.com"
-                    },
-                    To = new List<SendSmtpEmailTo>
-            {
-                new SendSmtpEmailTo { Email = paraEmail }
-            }
-                };
-
-                var response = await apiInstance.SendTransacEmailAsync(email);
-
-                return true;
-            }
-            catch (brevo_csharp.Client.ApiException ex)
-            {
-                Console.WriteLine("❌ Erro completo:");
-                Console.WriteLine(ex.ToString());
-                return false;
-            }
-
-
+            var erro = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Erro ao enviar email: {erro}");
         }
     }
-}
 
+}

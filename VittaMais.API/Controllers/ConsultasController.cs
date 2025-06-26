@@ -12,11 +12,16 @@ namespace VittaMais.API.Controllers
     {
         private readonly ConsultaService _consultaService;
         private readonly FirebaseService _firebaseService;
-
-        public ConsultasController(ConsultaService consultaService, FirebaseService firebaseService)
+        private readonly EmailService _emailService;
+        private readonly UsuarioService _usuarioService;
+        private readonly EspecialidadeService _especialidadeService;
+        public ConsultasController(ConsultaService consultaService, FirebaseService firebaseService, EmailService emailService, UsuarioService usuarioService, EspecialidadeService especialidadeService)
         {
             _consultaService = consultaService;
             _firebaseService = firebaseService;
+            _emailService = emailService;
+            _usuarioService = usuarioService;
+            _especialidadeService = especialidadeService;
         }
 
 
@@ -33,6 +38,7 @@ namespace VittaMais.API.Controllers
             {
                 PacienteId = dto.PacienteId,
                 NomePaciente = dto.NomePaciente,
+                EmailPaciente = dto.EmailPaciente,
                 MedicoId = dto.MedicoId,
                 Data = dto.Data,
                 Status = dto.Status,
@@ -41,9 +47,41 @@ namespace VittaMais.API.Controllers
 
             try
             {
+                // Salva a consulta no banco
                 await _consultaService.AgendarConsulta(novaConsulta);
 
-                // Retorna status 200 com mensagem de sucesso
+                // === Enviar e-mail após agendamento ===
+                try
+                {
+                    // Se o DTO não tem o email do paciente, busque aqui:
+                    string emailPaciente = dto.EmailPaciente;
+                    if (string.IsNullOrEmpty(emailPaciente))
+                    {
+                        var paciente = await _usuarioService.BuscarPorIdAsync(dto.PacienteId);
+                        emailPaciente = paciente?.Email ?? "";
+                    }
+
+                    // Buscar o médico para pegar nome (se quiser)
+                    var medico = await _usuarioService.BuscarPorIdAsync(dto.MedicoId);
+
+                    // Buscar especialidade para pegar nome
+                    var especialidade = await _especialidadeService.ObterPorId(dto.EspecialidadeId);
+
+                    Console.WriteLine($"➡ Enviando email para {dto.EmailPaciente}...");
+                    await _emailService.EnviarEmailConsultaAsync(
+                        dto.NomePaciente,
+                        emailPaciente,
+                        especialidade?.Nome ?? "Especialidade não informada",
+                        medico?.Nome ?? "Médico não informado",
+                        dto.Data
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log do erro, mas não bloqueia o retorno da API
+                    Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
+                }
+
                 return Ok(new
                 {
                     mensagem = "Consulta agendada com sucesso.",
@@ -52,7 +90,6 @@ namespace VittaMais.API.Controllers
             }
             catch (Exception ex)
             {
-                // Retorna status 500 com mensagem de erro
                 return StatusCode(500, new
                 {
                     mensagem = "Erro ao agendar a consulta.",
@@ -60,6 +97,32 @@ namespace VittaMais.API.Controllers
                 });
             }
         }
+
+        [HttpPost("testar-email")]
+        public async Task<IActionResult> TestarEnvioEmail()
+        {
+            try
+            {
+                await _emailService.EnviarEmailConsultaAsync(
+                    "Alanis Almeida", // Nome do paciente
+                    "alanisalmeidads@gmail.com", // E-mail do paciente
+                    "Cardiologia", // Especialidade
+                    "Dr. João da Silva", // Médico
+                    DateTime.Now.AddDays(1).AddHours(14) // Data da consulta
+                );
+
+                return Ok(new { mensagem = "E-mail enviado com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    mensagem = "Erro ao enviar o e-mail de teste",
+                    erro = ex.Message
+                });
+            }
+        }
+
 
         [HttpPut("Atualizar-consulta")]
         public async Task<IActionResult> AtualizarConsulta([FromBody] AtualizarConsultaDto dto)

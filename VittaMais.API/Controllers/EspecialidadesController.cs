@@ -28,5 +28,17 @@ namespace VittaMais.API.Controllers
             var lista = await _especialidadeService.ListarEspecialidades();
             return Ok(lista);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPorId(string id)
+        {
+            var especialidade = await _especialidadeService.ObterPorId(id);
+            if (especialidade == null)
+            {
+                return NotFound(new { mensagem = "Especialidade não encontrada." });
+            }
+            return Ok(especialidade);
+        }
+
     }
 }

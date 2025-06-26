@@ -361,39 +361,39 @@ namespace VittaMais.API.Services
             //await _emailService.EnviarEmailAsync(email, "Recuperação de Senha - Vitta+", emailHtml, true);  true = isHtml
         }
 
-        public async Task<bool> EnviarTokenRecuperacaoAsync(string email)
-        {
-            try
-            {
-                // 1. Verificar se usuário existe
-                var usuario = await BuscarUsuarioPorEmail(email);
+        //public async Task<bool> EnviarTokenRecuperacaoAsync(string email)
+        //{
+        //    try
+        //    {
+        //        // 1. Verificar se usuário existe
+        //        var usuario = await BuscarUsuarioPorEmail(email);
 
-                // 2. Gerar token
-                var token = Guid.NewGuid().ToString();
+        //        // 2. Gerar token
+        //        var token = Guid.NewGuid().ToString();
 
-                // 3. Salvar token
-                _tokens.Add(new TokenRecuperacao
-                {
-                    Email = email,
-                    Token = token,
-                    Expiracao = DateTime.UtcNow.AddHours(1),
-                    Usado = false
-                });
+        //        // 3. Salvar token
+        //        _tokens.Add(new TokenRecuperacao
+        //        {
+        //            Email = email,
+        //            Token = token,
+        //            Expiracao = DateTime.UtcNow.AddHours(1),
+        //            Usado = false
+        //        });
 
-                // 4. Criar link e corpo do email
-                var link = $"http://localhost:5173/redefinir-senha?email={email}&token={token}";
+        //        // 4. Criar link e corpo do email
+        //        var link = $"http://localhost:5173/redefinir-senha?email={email}&token={token}";
 
-                var corpoHtml = $"<p>Para redefinir sua senha, clique no link abaixo:</p><a href='{link}'>Redefinir senha</a>";
+        //        var corpoHtml = $"<p>Para redefinir sua senha, clique no link abaixo:</p><a href='{link}'>Redefinir senha</a>";
 
-                // 5. Enviar email
-                return await _emailService.EnviarEmailAsync(email, "Recuperação de senha", corpoHtml);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao recuperar senha: {ex.Message}");
-                return false;
-            }
-        }
+        //        // 5. Enviar email
+        //        return await _emailService.EnviarEmailConsultaAsync(email, "Recuperação de senha", corpoHtml);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Erro ao recuperar senha: {ex.Message}");
+        //        return false;
+        //    }
+        //}
 
         // Implemente o BuscarUsuarioPorEmail conforme seu Firebase
         public async Task<Usuario> BuscarUsuarioPorEmail(string email)
@@ -413,8 +413,6 @@ namespace VittaMais.API.Services
         }
 
 
-
-        // Também terá método para validar token e alterar senha depois
     }
 
 }

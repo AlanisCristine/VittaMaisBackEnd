@@ -1,3 +1,4 @@
+using VittaMais.API;
 using VittaMais.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,10 @@ builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<EspecialidadeService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.Configure<BrevoSettings>(builder.Configuration.GetSection("BrevoSettings"));
+
+
+
 
 
 // Registrar outros serviços
