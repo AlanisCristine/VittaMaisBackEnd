@@ -12,16 +12,16 @@ namespace VittaMais.API.Controllers
     {
         private readonly ConsultaService _consultaService;
         private readonly FirebaseService _firebaseService;
-        private readonly EmailService _emailService;
         private readonly UsuarioService _usuarioService;
+        private readonly EmailService _emailService;
         private readonly EspecialidadeService _especialidadeService;
-        public ConsultasController(ConsultaService consultaService, FirebaseService firebaseService, EmailService emailService, UsuarioService usuarioService, EspecialidadeService especialidadeService)
+        public ConsultasController(ConsultaService consultaService, FirebaseService firebaseService, UsuarioService usuarioService, EspecialidadeService especialidadeService, EmailService emailService)
         {
             _consultaService = consultaService;
             _firebaseService = firebaseService;
-            _emailService = emailService;
             _usuarioService = usuarioService;
             _especialidadeService = especialidadeService;
+           _emailService = emailService;
         }
 
 
@@ -69,11 +69,11 @@ namespace VittaMais.API.Controllers
 
                     Console.WriteLine($"➡ Enviando email para {dto.EmailPaciente}...");
                     await _emailService.EnviarEmailConsultaAsync(
-                        dto.NomePaciente,
-                        emailPaciente,
-                        especialidade?.Nome ?? "Especialidade não informada",
-                        medico?.Nome ?? "Médico não informado",
-                        dto.Data
+                    dto.NomePaciente,
+                    dto.EmailPaciente,
+                    especialidade.Nome,
+                    medico.Nome,
+                    dto.Data
                     );
                 }
                 catch (Exception ex)

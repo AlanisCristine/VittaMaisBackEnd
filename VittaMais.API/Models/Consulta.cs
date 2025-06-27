@@ -15,6 +15,10 @@ namespace VittaMais.API.Models
         public string Diagnostico { get; set; }
         public string Observacoes { get; set; }
         public string Remedios { get; set; }
+        public string SintomasPaciente { get; set; }
+        public string RelatoriosMedicos { get; set; }
+        public string RemediosDiarios { get; set; }
+        public string ProblemasSaude { get; set; }
 
     }
 
