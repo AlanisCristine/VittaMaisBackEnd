@@ -6,6 +6,7 @@ using VittaMais.API.Models;
 using VittaMais.API.Models.DTOs;
 
 using VittaMais.API.Services;
+using VittaMais.API.Utils;
 
 namespace VittaMais.API.Controllers
 {
@@ -28,6 +29,11 @@ namespace VittaMais.API.Controllers
             if (usuario == null || string.IsNullOrEmpty(usuario.Email) || string.IsNullOrEmpty(usuario.Senha))
             {
                 return BadRequest("Dados do usuário inválidos. Por favor, preencha todos os campos.");
+            }
+
+            if (!ValidacaoUtils.ValidarCPF(usuario.Cpf))
+            {
+                return BadRequest(new { mensagem = "CPF inválido. Verifique e tente novamente." });
             }
 
             try
@@ -54,6 +60,10 @@ namespace VittaMais.API.Controllers
         [HttpPost("cadastrar-paciente-com-foto")]
         public async Task<IActionResult> CadastrarPacienteComFoto([FromForm] PacienteDTO dto)
         {
+            if (!ValidacaoUtils.ValidarCPF(dto.Cpf))
+            {
+                return BadRequest(new { mensagem = "CPF inválido. Verifique e tente novamente." });
+            }
             try
             {
                 var novoPaciente = new Usuario
@@ -82,6 +92,11 @@ namespace VittaMais.API.Controllers
         {
             if (!dto.DataNascimento.HasValue)
                 return BadRequest(new { erro = "Data de nascimento é obrigatória." });
+
+            if (!ValidacaoUtils.ValidarCPF(dto.Cpf))
+            {
+                return BadRequest(new { mensagem = "CPF inválido. Verifique e tente novamente." });
+            }
             try
             {
                 var novoMedico = new Usuario
@@ -109,6 +124,10 @@ namespace VittaMais.API.Controllers
         [HttpPost("cadastrar/medico")]
         public async Task<IActionResult> CadastrarMedico([FromBody] MedicoDTO medicoDto)
         {
+            if (!ValidacaoUtils.ValidarCPF(medicoDto.Cpf))
+            {
+                return BadRequest(new { mensagem = "CPF inválido. Verifique e tente novamente." });
+            }
             var medico = new Usuario
             {
                 Nome = medicoDto.Nome,
