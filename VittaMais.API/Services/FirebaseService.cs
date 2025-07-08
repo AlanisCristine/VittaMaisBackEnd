@@ -17,8 +17,5 @@ namespace VittaMais.API.Services
             return _firebaseClient;
      
         }
-
-       
-
     }
 }
