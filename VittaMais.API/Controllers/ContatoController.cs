@@ -46,17 +46,5 @@ namespace VittaMais.API.Controllers
                 return StatusCode(500, $"Erro ao enviar o email: {ex.Message}");
             }
         }
-
-        [HttpGet("Listar-TESTE")]
-        public async Task<string> ListarTESTE()
-        {
-            return "teste";
-        }
-
-        [HttpGet("Listar-TESTEdo teste")]
-        public async Task<string> ListarTESTEdoTeste()
-        {
-            return "testeDoTeste";
-        }
     }
 }
