@@ -6,3 +6,6 @@ services:
     container_name: vittamais-api
     ports:
       # Mapeia a porta 5211 do seu computador para a porta 8080 do contêiner
+      - "5211:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080

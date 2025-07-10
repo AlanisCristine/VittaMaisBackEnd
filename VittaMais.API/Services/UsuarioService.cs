@@ -189,7 +189,7 @@ namespace VittaMais.API.Services
                 .ToList();
         }
 
-        public async Task<Usuario> BuscarPorIdAsync(string id)
+        public async Task<Usuario?> BuscarPorIdAsync(string id)
         {
             var usuario = await _firebase
                 .Child("usuarios")
