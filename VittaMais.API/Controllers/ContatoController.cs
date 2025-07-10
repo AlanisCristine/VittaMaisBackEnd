@@ -52,5 +52,11 @@ namespace VittaMais.API.Controllers
         {
             return "teste";
         }
+
+        [HttpGet("Listar-TESTEdo teste")]
+        public async Task<string> ListarTESTEdoTeste()
+        {
+            return "testeDoTeste";
+        }
     }
 }
