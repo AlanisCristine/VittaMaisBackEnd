@@ -1,14 +1,8 @@
-version: '3.8'
-
 services:
   vittamais-api:
     build:
-      context: ./VittaMais.API
-      dockerfile: VittaMais.API/Dockerfile
+      context: .
+      dockerfile: ./VittaMais.API/Dockerfile
     container_name: vittamais-api
     ports:
       # Mapeia a porta 5211 do seu computador para a porta 8080 do contêiner
-      - "5211:8080"
-    environment:
-      # Garante que a API dentro do contêiner escute na porta correta
-      - ASPNETCORE_URLS=http://+:8080
