@@ -1,4 +1,4 @@
-﻿using Firebase.Database;
+﻿﻿using Firebase.Database;
 using Firebase.Database.Query;
 using Newtonsoft.Json;
 using VittaMais.API.Models;
@@ -56,7 +56,7 @@ namespace VittaMais.API.Services
             return especialidades;
         }
 
-        public async Task<Especialidade> ObterPorId(string id)
+        public async Task<Especialidade?> ObterPorId(string id)
         {
             var resultado = await _firebaseService
                 .GetDatabase()                    

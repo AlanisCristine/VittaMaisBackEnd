@@ -1,4 +1,4 @@
-﻿using Firebase.Database.Query;
+﻿﻿using Firebase.Database.Query;
 using Microsoft.AspNetCore.Mvc;
 using VittaMais.API.Models;
 using VittaMais.API.Models.DTOs;
@@ -62,19 +62,27 @@ namespace VittaMais.API.Controllers
                     }
 
                     // Buscar o médico para pegar nome (se quiser)
-                    var medico = await _usuarioService.BuscarPorIdAsync(dto.MedicoId);
+                    var medico = await _usuarioService.BuscarPorIdAsync(dto.MedicoId);                    
 
                     // Buscar especialidade para pegar nome
                     var especialidade = await _especialidadeService.ObterPorId(dto.EspecialidadeId);
 
-                    Console.WriteLine($"➡ Enviando email para {dto.EmailPaciente}...");
-                    await _emailService.EnviarEmailConsultaAsync(
-                    dto.NomePaciente,
-                    dto.EmailPaciente,
-                    especialidade.Nome,
-                    medico.Nome,
-                    dto.Data
-                    );
+                    // Se não encontrar médico ou especialidade, apenas loga e continua sem enviar email
+                    if (medico == null || especialidade == null)
+                    {
+                        Console.WriteLine($"Não foi possível enviar e-mail de confirmação. Médico (ID: {dto.MedicoId}) ou Especialidade (ID: {dto.EspecialidadeId}) não encontrados.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"➡ Enviando email para {dto.EmailPaciente}...");
+                        await _emailService.EnviarEmailConsultaAsync(
+                        dto.NomePaciente,
+                        dto.EmailPaciente,
+                        especialidade.Nome,
+                        medico.Nome,
+                        dto.Data
+                        );
+                    }
                 }
                 catch (Exception ex)
                 {
