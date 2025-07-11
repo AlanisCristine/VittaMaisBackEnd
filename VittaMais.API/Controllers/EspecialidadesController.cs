@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using VittaMais.API.Models;
+using VittaMais.API.Models.DTOs;
 using VittaMais.API.Services;
 
 namespace VittaMais.API.Controllers
@@ -22,6 +24,36 @@ namespace VittaMais.API.Controllers
             return Ok(new { Message = "Especialidade cadastrada com sucesso!", Id = id });
         }
 
+        [HttpPost("cadastrar-com-foto")]
+        public async Task<IActionResult> CadastrarEspecialidadeComFoto([FromForm] EspecialidadeDTO dto)
+        {
+            try
+            {
+                var especialidade = new Especialidade
+                {
+                    Nome = dto.Nome,
+                    Descricao = dto.Descricao,
+                    Valor = dto.Valor
+                    // ImagemUrl será preenchida no service
+                };
+
+                var id = await _especialidadeService.AdicionarEspecialidadeComImagemAsync(dto.Imagem, especialidade);
+
+                return Ok(new
+                {
+                    mensagem = "Especialidade cadastrada com sucesso!",
+                    id
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    erro = ex.Message
+                });
+            }
+        }
+
         [HttpGet("listar")]
         public async Task<IActionResult> Listar()
         {
@@ -38,6 +70,29 @@ namespace VittaMais.API.Controllers
                 return NotFound(new { mensagem = "Especialidade não encontrada." });
             }
             return Ok(especialidade);
+        }
+
+        [HttpPut("editar-com-foto/{id}")]
+        public async Task<IActionResult> EditarEspecialidadeComFoto(string id, [FromForm] EspecialidadeDTO dto)
+        {
+            try
+            {
+                var especialidade = new Especialidade
+                {
+                    Nome = dto.Nome,
+                    Descricao = dto.Descricao,
+                    Valor = dto.Valor
+                    // ImagemUrl será setado no service se enviado
+                };
+
+                await _especialidadeService.EditarEspecialidadeComImagemAsync(id, dto.Imagem, especialidade);
+
+                return Ok(new { mensagem = "Especialidade atualizada com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { erro = ex.Message });
+            }
         }
 
     }

@@ -1,7 +1,18 @@
+using CloudinaryDotNet;
 using VittaMais.API;
 using VittaMais.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton(_ =>
+{
+    Account account = new Account(
+        "du4uvbmzy", // Cloud Name
+        "925321576856996", // API Key
+        "fDAJ9k_6GBrSc7zXnf4V050HjWU" // API Secret
+    );
+    return new Cloudinary(account);
+});
 
 // Registrar dependências antes de chamar builder.Build()
 builder.Services.AddScoped<FirebaseService>();
