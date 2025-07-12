@@ -91,5 +91,4 @@ public class EmailService
         await cliente.DisconnectAsync(true);
     }
 
-    public void aaaa() { }
 }
