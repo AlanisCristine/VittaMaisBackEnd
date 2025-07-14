@@ -42,18 +42,24 @@ namespace VittaMais.API.Controllers
                 MedicoId = dto.MedicoId,
                 Data = dto.Data,
                 Status = dto.Status,
-                EspecialidadeId = dto.EspecialidadeId
+                EspecialidadeId = dto.EspecialidadeId,
+
+                Diagnostico = dto.Diagnostico ?? "",
+                Observacoes = dto.Observacoes ?? "",
+                Remedios = dto.Remedios ?? "",
+                SintomasPaciente = dto.SintomasPaciente ?? "",
+                RelatoriosMedicos = dto.RelatoriosMedicos ?? "",
+                RemediosDiarios = dto.RemediosDiarios ?? "",
+                ProblemasSaude = dto.ProblemasSaude ?? ""
             };
 
             try
             {
-                // Salva a consulta no banco
                 await _consultaService.AgendarConsulta(novaConsulta);
 
                 // === Enviar e-mail após agendamento ===
                 try
                 {
-                    // Se o DTO não tem o email do paciente, busque aqui:
                     string emailPaciente = dto.EmailPaciente;
                     if (string.IsNullOrEmpty(emailPaciente))
                     {
@@ -61,32 +67,27 @@ namespace VittaMais.API.Controllers
                         emailPaciente = paciente?.Email ?? "";
                     }
 
-                    // Buscar o médico para pegar nome (se quiser)
-                    var medico = await _usuarioService.BuscarPorIdAsync(dto.MedicoId);                    
-
-                    // Buscar especialidade para pegar nome
+                    var medico = await _usuarioService.BuscarPorIdAsync(dto.MedicoId);
                     var especialidade = await _especialidadeService.ObterPorId(dto.EspecialidadeId);
 
-                    // Se não encontrar médico ou especialidade, apenas loga e continua sem enviar email
                     if (medico == null || especialidade == null)
                     {
                         Console.WriteLine($"Não foi possível enviar e-mail de confirmação. Médico (ID: {dto.MedicoId}) ou Especialidade (ID: {dto.EspecialidadeId}) não encontrados.");
                     }
                     else
                     {
-                        Console.WriteLine($"➡ Enviando email para {dto.EmailPaciente}...");
+                        Console.WriteLine($"➡ Enviando email para {emailPaciente}...");
                         await _emailService.EnviarEmailConsultaAsync(
-                        dto.NomePaciente,
-                        dto.EmailPaciente,
-                        especialidade.Nome,
-                        medico.Nome,
-                        dto.Data
+                            dto.NomePaciente,
+                            emailPaciente,
+                            especialidade.Nome,
+                            medico.Nome,
+                            dto.Data
                         );
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Log do erro, mas não bloqueia o retorno da API
                     Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
                 }
 
@@ -105,6 +106,7 @@ namespace VittaMais.API.Controllers
                 });
             }
         }
+
 
         [HttpPost("testar-email")]
         public async Task<IActionResult> TestarEnvioEmail()
