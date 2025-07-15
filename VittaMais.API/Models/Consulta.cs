@@ -7,6 +7,7 @@ namespace VittaMais.API.Models
         public string Id { get; set; }
         public string PacienteId { get; set; }
         public string NomePaciente { get; set; }
+        public string NomeMedico { get; set; }
         public string EmailPaciente { get; set; }
         public string MedicoId { get; set; }
         public DateTime Data { get; set; }

@@ -34,27 +34,31 @@ namespace VittaMais.API.Controllers
                 return BadRequest(new { mensagem = "Dados da consulta inválidos." });
             }
 
-            var novaConsulta = new Consulta
-            {
-                PacienteId = dto.PacienteId,
-                NomePaciente = dto.NomePaciente,
-                EmailPaciente = dto.EmailPaciente,
-                MedicoId = dto.MedicoId,
-                Data = dto.Data,
-                Status = dto.Status,
-                EspecialidadeId = dto.EspecialidadeId,
-
-                Diagnostico = dto.Diagnostico ?? "",
-                Observacoes = dto.Observacoes ?? "",
-                Remedios = dto.Remedios ?? "",
-                SintomasPaciente = dto.SintomasPaciente ?? "",
-                RelatoriosMedicos = dto.RelatoriosMedicos ?? "",
-                RemediosDiarios = dto.RemediosDiarios ?? "",
-                ProblemasSaude = dto.ProblemasSaude ?? ""
-            };
-
             try
             {
+                var medico = await _usuarioService.BuscarPorIdAsync(dto.MedicoId);
+                var especialidade = await _especialidadeService.ObterPorId(dto.EspecialidadeId);
+
+                var novaConsulta = new Consulta
+                {
+                    PacienteId = dto.PacienteId,
+                    NomePaciente = dto.NomePaciente,
+                    EmailPaciente = dto.EmailPaciente,
+                    MedicoId = dto.MedicoId,
+                    NomeMedico = medico?.Nome ?? "Médico não encontrado",
+                    Data = dto.Data,
+                    Status = dto.Status,
+                    EspecialidadeId = dto.EspecialidadeId,
+
+                    Diagnostico = dto.Diagnostico ?? "",
+                    Observacoes = dto.Observacoes ?? "",
+                    Remedios = dto.Remedios ?? "",
+                    SintomasPaciente = dto.SintomasPaciente ?? "",
+                    RelatoriosMedicos = dto.RelatoriosMedicos ?? "",
+                    RemediosDiarios = dto.RemediosDiarios ?? "",
+                    ProblemasSaude = dto.ProblemasSaude ?? ""
+                };
+
                 await _consultaService.AgendarConsulta(novaConsulta);
 
                 // === Enviar e-mail após agendamento ===
@@ -66,9 +70,6 @@ namespace VittaMais.API.Controllers
                         var paciente = await _usuarioService.BuscarPorIdAsync(dto.PacienteId);
                         emailPaciente = paciente?.Email ?? "";
                     }
-
-                    var medico = await _usuarioService.BuscarPorIdAsync(dto.MedicoId);
-                    var especialidade = await _especialidadeService.ObterPorId(dto.EspecialidadeId);
 
                     if (medico == null || especialidade == null)
                     {
@@ -106,6 +107,7 @@ namespace VittaMais.API.Controllers
                 });
             }
         }
+
 
 
         [HttpPost("testar-email")]
