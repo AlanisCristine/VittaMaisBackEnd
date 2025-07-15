@@ -224,16 +224,27 @@ namespace VittaMais.API.Controllers
         [HttpGet("usuario/{usuarioId}")]
         public async Task<IActionResult> ObterConsultasPorUsuario(string usuarioId)
         {
-            var resultado = await _consultaService.ObterConsultasPorUsuario(usuarioId);
-
-            // Se o resultado for uma mensagem de erro (usuário não encontrado)
-            if (resultado is not List<object>)
+            try
             {
-                return NotFound(resultado);
-            }
+                var consultas = await _consultaService.ObterConsultasPorUsuario(usuarioId);
 
-            return Ok(resultado);
+                if (consultas == null || !consultas.Any())
+                {
+                    return NotFound(new { mensagem = "Nenhuma consulta encontrada para este paciente." });
+                }
+
+                return Ok(consultas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    mensagem = "Erro ao buscar consultas do usuário.",
+                    erro = ex.Message
+                });
+            }
         }
+
 
         [HttpGet("listar-consultas-por-data")]
         public async Task<ActionResult<List<Consulta>>> GetConsultasPorData([FromQuery] DateTime data)

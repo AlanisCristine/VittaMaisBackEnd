@@ -207,25 +207,23 @@ namespace VittaMais.API.Services
 
             return resultado;
         }
-        public async Task<object> ObterConsultasPorUsuario(string usuarioId)
+        public async Task<List<ConsultaPacienteDto>> ObterConsultasPorUsuario(string usuarioId)
         {
             var db = _firebaseService.GetDatabase();
 
-            // Pega o paciente
             var paciente = await db
                 .Child("usuarios")
                 .Child(usuarioId)
                 .OnceSingleAsync<Usuario>();
 
             if (paciente == null)
-                return new { Mensagem = "Usuário não encontrado." };
+                return new List<ConsultaPacienteDto>(); // ou lançar exceção, caso prefira
 
-            // Pega todas as consultas
             var consultasSnapshot = await db
                 .Child("consultas")
                 .OnceAsync<Consulta>();
 
-            var consultasDoUsuario = new List<object>();
+            var consultasDoUsuario = new List<ConsultaPacienteDto>();
 
             foreach (var consulta in consultasSnapshot)
             {
@@ -234,7 +232,6 @@ namespace VittaMais.API.Services
                 if (c.PacienteId != usuarioId)
                     continue;
 
-                // Pega o médico
                 var medico = await db
                     .Child("usuarios")
                     .Child(c.MedicoId)
@@ -242,7 +239,6 @@ namespace VittaMais.API.Services
 
                 var nomeMedico = medico?.Nome ?? "Médico não encontrado";
 
-                // Pega a especialidade
                 string nomeEspecialidade = "Especialidade não encontrada";
                 if (!string.IsNullOrEmpty(medico?.EspecialidadeId))
                 {
@@ -254,19 +250,26 @@ namespace VittaMais.API.Services
                     nomeEspecialidade = especialidade?.Nome ?? nomeEspecialidade;
                 }
 
-                consultasDoUsuario.Add(new
+                consultasDoUsuario.Add(new ConsultaPacienteDto
                 {
                     NomePaciente = paciente.Nome,
                     Data = c.Data,
                     NomeMedico = nomeMedico,
                     Especialidade = nomeEspecialidade,
                     Status = c.Status.ToString(),
-                    Remedios = c.Remedios
+                    Diagnostico = c.Diagnostico,
+                    Observacoes = c.Observacoes,
+                    Remedios = c.Remedios,
+                    ProblemasSaude = c.ProblemasSaude,
+                    RelatoriosMedicos = c.RelatoriosMedicos,
+                    SintomasPaciente = c.SintomasPaciente,
+                    RemediosDiarios = c.RemediosDiarios
                 });
             }
 
             return consultasDoUsuario;
         }
+
         public async Task<Consulta> ObterConsultaPorId(string id)
         {
             var consulta = await _firebaseService
