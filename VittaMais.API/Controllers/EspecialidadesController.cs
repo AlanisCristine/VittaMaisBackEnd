@@ -81,7 +81,8 @@ namespace VittaMais.API.Controllers
                 {
                     Nome = dto.Nome,
                     Descricao = dto.Descricao,
-                    Valor = dto.Valor
+                    Valor = dto.Valor,
+                    Status = dto.Status
                     // ImagemUrl será setado no service se enviado
                 };
 

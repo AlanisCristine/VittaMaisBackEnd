@@ -21,6 +21,8 @@ namespace VittaMais.API.Services
 
         public async Task<string> AdicionarEspecialidade(Especialidade especialidade)
         {
+            especialidade.Status = true;
+
             // 1. Salva a especialidade (ainda com Id vazio ou "string")
             var refEspecialidade = await _firebaseService
                 .GetDatabase()
@@ -66,6 +68,8 @@ namespace VittaMais.API.Services
 
         public async Task<string> AdicionarEspecialidadeComImagemAsync(IFormFile? imagem, Especialidade especialidade)
         {
+            especialidade.Status = true;
+
             if (imagem != null && imagem.Length > 0)
             {
                 var imagemUrl = await UploadImagemAsync(imagem);
@@ -143,6 +147,7 @@ namespace VittaMais.API.Services
             especialidadeExistente.Nome = especialidadeAtualizada.Nome;
             especialidadeExistente.Descricao = especialidadeAtualizada.Descricao;
             especialidadeExistente.Valor = especialidadeAtualizada.Valor;
+            especialidadeExistente.Status = especialidadeAtualizada.Status;
 
             // Atualiza no Firebase
             await _firebaseService
@@ -151,6 +156,7 @@ namespace VittaMais.API.Services
                 .Child(id)
                 .PutAsync(JsonConvert.SerializeObject(especialidadeExistente));
         }
+
 
 
     }

@@ -214,7 +214,6 @@ namespace VittaMais.API.Services
             usuarioExistente.Nome = dto.Nome;
             usuarioExistente.Email = dto.Email;
             usuarioExistente.Endereco = dto.Endereco;
-            usuarioExistente.Cpf = dto.Cpf;
             usuarioExistente.Telefone = dto.Telefone;
             usuarioExistente.DataNascimento = dto.DataNascimento;
             // os campos como Id, Senha, FotoUrl, etc. são preservados
@@ -239,7 +238,6 @@ namespace VittaMais.API.Services
             usuarioExistente.Nome = dto.Nome;
             usuarioExistente.Email = dto.Email;
             usuarioExistente.Endereco = dto.Endereco;
-            usuarioExistente.Cpf = dto.Cpf;
             usuarioExistente.Telefone = dto.Telefone;
             usuarioExistente.DataNascimento = dto.DataNascimento.Value;
             // os campos como Id, Senha, FotoUrl, etc. são preservados

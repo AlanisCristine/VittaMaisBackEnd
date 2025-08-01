@@ -15,5 +15,7 @@ namespace VittaMais.API.Models.DTOs
 
         public IFormFile? Imagem { get; set; }
 
+        public bool Status { get; set; } = true;
+
     }
 }
