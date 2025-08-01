@@ -26,9 +26,43 @@ namespace VittaMais.API.Controllers
 
 
 
-       
 
 
+        [HttpPost("agendar-consulta")]
+        public async Task<IActionResult> AgendarConsulta([FromBody] CriarConsultaDto dto)
+        {
+            if (dto == null)
+                return BadRequest(new { mensagem = "Dados da consulta inválidos." });
+
+            try
+            {
+                var consulta = new Consulta
+                {
+                    PacienteId = dto.PacienteId,
+                    NomePaciente = dto.NomePaciente,
+                    EmailPaciente = dto.EmailPaciente,
+                    MedicoId = dto.MedicoId,
+                    NomeMedico = dto.NomeMedico,
+                    Data = dto.Data,
+                    Status = dto.Status,
+                    EspecialidadeId = dto.EspecialidadeId, // será sobrescrita pelo service com a do médico
+                    Diagnostico = dto.Diagnostico,
+                    Observacoes = dto.Observacoes,
+                    Remedios = dto.Remedios,
+                    SintomasPaciente = dto.SintomasPaciente,
+                    RelatoriosMedicos = dto.RelatoriosMedicos,
+                    RemediosDiarios = dto.RemediosDiarios,
+                    ProblemasSaude = dto.ProblemasSaude
+                };
+
+                var id = await _consultaService.AgendarConsulta(consulta);
+                return Ok(new { mensagem = "Consulta agendada com sucesso.", consultaId = id });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
+            }
+        }
 
         [HttpPost("testar-email")]
         public async Task<IActionResult> TestarEnvioEmail()
