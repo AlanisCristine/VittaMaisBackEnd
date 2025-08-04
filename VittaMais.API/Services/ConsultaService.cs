@@ -201,7 +201,11 @@ namespace VittaMais.API.Services
                     EspecialidadeId = especialidadeId,
                     EspecialidadeNome = especialidadeNome,
                     Data = consulta.Data,
-                    Status = consulta.Status
+                    Status = consulta.Status,
+                    Diagnostico = consulta.Diagnostico,
+                    Observacoes = consulta.Observacoes,
+                    Remedios = consulta.Remedios
+                
                 });
             }
 
