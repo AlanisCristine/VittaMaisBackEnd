@@ -209,5 +209,16 @@ namespace VittaMais.API.Controllers
             return Ok(consultas);
         }
 
+
+        [HttpGet("medicos/{medicoId}/nome")]
+        public async Task<IActionResult> ObterNomeMedico(string medicoId)
+        {
+            var medico = await _usuarioService.BuscarPorIdAsync(medicoId);
+            if (medico == null)
+                return NotFound();
+
+            return Ok(new { nome = medico.Nome });
+        }
+
     }
 }
