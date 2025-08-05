@@ -177,6 +177,11 @@ namespace VittaMais.API.Controllers
         }
 
 
+
+
+
+
+
         [HttpGet("usuario/{usuarioId}")]
         public async Task<IActionResult> ObterConsultasPorUsuario(string usuarioId)
         {
