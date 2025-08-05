@@ -14,5 +14,8 @@
         public string Diagnostico { get; set; }
         public string Observacoes { get; set; }
         public string Remedios { get; set; }
+        public string Cpf { get; set; }
+        public Endereco Endereco { get; set; }
+        public DateTime DataNascimento { get; set; }
     }
 }

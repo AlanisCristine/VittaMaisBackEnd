@@ -60,8 +60,6 @@ namespace VittaMais.API.Services
 
             return consulta.Id;
         }
-
-
         public async Task AtualizarConsulta(AtualizarConsultaDto dto)
         {
             var consultaExistente = await ObterConsultaPorId(dto.Id);
@@ -85,8 +83,6 @@ namespace VittaMais.API.Services
                 .Child(dto.Id)
                 .PutAsync(JsonConvert.SerializeObject(consultaExistente));
         }
-
-
         public async Task<List<Consulta>> ListarConsultas()
         {
             var consultas = new List<Consulta>();
@@ -159,8 +155,10 @@ namespace VittaMais.API.Services
         {
             var db = _firebaseService.GetDatabase();
 
-            // Médicos com a especialidade
+            // Pega todos os usuários (médicos e pacientes)
             var usuariosSnapshot = await db.Child("usuarios").OnceAsync<Usuario>();
+
+            // Médicos com a especialidade
             var medicos = usuariosSnapshot
                 .Where(u => u.Object.Tipo == TipoUsuario.Medico && u.Object.EspecialidadeId == especialidadeId)
                 .ToList();
@@ -173,10 +171,10 @@ namespace VittaMais.API.Services
                 .Where(c => medicoIds.Contains(c.Object.MedicoId))
                 .ToList();
 
-            // Pacientes
+            // Pacientes: dicionário pacienteId -> paciente completo (para pegar cpf, endereço e data nascimento)
             var pacientes = usuariosSnapshot
                 .Where(u => u.Object.Tipo == TipoUsuario.Paciente)
-                .ToDictionary(p => p.Key, p => p.Object.Nome);
+                .ToDictionary(p => p.Key, p => p.Object);
 
             // Especialidade
             var especialidadesSnapshot = await db.Child("especialidades").OnceAsync<Especialidade>();
@@ -185,11 +183,19 @@ namespace VittaMais.API.Services
 
             // Montar resultado detalhado
             var resultado = new List<ConsultaDetalhada>();
+
             foreach (var c in consultasFiltradas)
             {
                 var consulta = c.Object;
                 var medicoNome = medicos.FirstOrDefault(m => m.Key == consulta.MedicoId)?.Object?.Nome ?? "Desconhecido";
-                var pacienteNome = pacientes.ContainsKey(consulta.PacienteId) ? pacientes[consulta.PacienteId] : "Desconhecido";
+
+                pacientes.TryGetValue(consulta.PacienteId, out var paciente);
+
+                DateTime dataNascimentoPaciente = default;
+                if (paciente != null && paciente.DataNascimento != default(DateTime))
+                {
+                    dataNascimentoPaciente = paciente.DataNascimento;
+                }
 
                 resultado.Add(new ConsultaDetalhada
                 {
@@ -197,20 +203,26 @@ namespace VittaMais.API.Services
                     MedicoId = consulta.MedicoId,
                     MedicoNome = medicoNome,
                     PacienteId = consulta.PacienteId,
-                    PacienteNome = pacienteNome,
+                    PacienteNome = paciente?.Nome ?? "Desconhecido",
                     EspecialidadeId = especialidadeId,
                     EspecialidadeNome = especialidadeNome,
                     Data = consulta.Data,
                     Status = consulta.Status,
                     Diagnostico = consulta.Diagnostico,
                     Observacoes = consulta.Observacoes,
-                    Remedios = consulta.Remedios
-                
+                    Remedios = consulta.Remedios,
+
+                    // Campos extras do paciente
+                    Cpf = paciente?.Cpf ?? "Não informado",
+                    Endereco = paciente?.Endereco,
+                    DataNascimento = dataNascimentoPaciente
                 });
             }
 
             return resultado;
         }
+
+
         public async Task<List<ConsultaPacienteDto>> ObterConsultasPorUsuario(string usuarioId)
         {
             var db = _firebaseService.GetDatabase();
@@ -273,7 +285,6 @@ namespace VittaMais.API.Services
 
             return consultasDoUsuario;
         }
-
         public async Task<Consulta> ObterConsultaPorId(string id)
         {
             var consulta = await _firebaseService
