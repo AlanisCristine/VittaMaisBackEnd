@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Globalization;
+using System.Security.Claims;
 using VittaMais.API.Models;
 using VittaMais.API.Models.DTOs;
 
@@ -15,10 +18,14 @@ namespace VittaMais.API.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly UsuarioService _usuarioService;
+        private readonly EmailService _emailService;
+        private readonly TokenService _tokenService;
 
-        public UsuariosController(UsuarioService usuarioService)
+        public UsuariosController(UsuarioService usuarioService, EmailService emailService, TokenService tokenService)
         {
             _usuarioService = usuarioService;
+            _emailService = emailService;
+            _tokenService = tokenService;
         }
 
 
@@ -110,7 +117,7 @@ namespace VittaMais.API.Controllers
                     DataNascimento = dto.DataNascimento.Value,
                     Endereco = dto.Endereco,
                     Tipo = TipoUsuario.Medico
-                }; 
+                };
 
                 var id = await _usuarioService.CadastrarUsuarioComFoto(dto.FotoPerfil, novoMedico);
                 return Ok(new { id });
@@ -169,6 +176,81 @@ namespace VittaMais.API.Controllers
             return Ok(new { Message = "Login bem-sucedido!", Usuario = usuario });
         }
 
+        [HttpPost("recuperar-senha")]
+        public async Task<IActionResult> RecuperarSenha([FromBody] RecuperarSenhaDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.Email))
+                return BadRequest(new { mensagem = "E-mail é obrigatório." });
+
+            try
+            {
+                var usuario = await _usuarioService.BuscarPorEmailAsync(dto.Email);
+
+                if (usuario == null)
+                    return NotFound(new { mensagem = "Usuário com esse e-mail não foi encontrado." });
+
+                // Gera uma nova senha temporária
+                var novaSenha = Guid.NewGuid().ToString().Substring(0, 8); // 8 caracteres aleatórios
+
+                // Atualiza a senha no Firebase
+                usuario.Senha = novaSenha;
+                await _usuarioService.AtualizarSenha(usuario.Id, novaSenha);
+
+                // Envia o e-mail com MailKit
+                var token = _tokenService.GerarTokenRecuperacao(usuario.Email);
+
+                await _emailService.EnviarEmailRecuperacaoSenhaAsync(usuario.Nome, usuario.Email, token);
+
+
+                return Ok(new { mensagem = "Uma nova senha foi enviada para seu e-mail." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao recuperar a senha.", erro = ex.Message });
+            }
+        }
+
+        [HttpPost("redefinir-senha")]
+        public async Task<IActionResult> RedefinirSenha(string token, [FromBody] string novaSenha)
+        {
+            var principal = _tokenService.ValidarToken(token);
+            if (principal == null)
+                return BadRequest(new { mensagem = "Token inválido ou expirado." });
+
+            var email = principal.FindFirstValue(ClaimTypes.Email);
+            var usuario = await _usuarioService.BuscarPorEmailAsync(email);
+            if (usuario == null)
+                return NotFound(new { mensagem = "Usuário não encontrado." });
+
+            var senhaCriptografada = BCrypt.Net.BCrypt.HashPassword(novaSenha);
+            await _usuarioService.AtualizarSenha(usuario.Id, senhaCriptografada);
+
+            return Ok(new { mensagem = "Senha redefinida com sucesso." });
+        }
+
+        [HttpPost("solicitar-redefinicao-senha")]
+        public async Task<IActionResult> SolicitarRedefinicaoSenha([FromBody] RecuperarSenhaDto dto)
+        {
+            var usuario = await _usuarioService.BuscarPorEmailAsync(dto.Email);
+            if (usuario == null)
+                return NotFound(new { mensagem = "Usuário não encontrado." });
+
+            var token = _tokenService.GerarTokenRecuperacao(usuario.Email);
+
+            // Aqui você envia o email com o token embutido
+            await _emailService.EnviarEmailRecuperacaoSenhaAsync(usuario.Nome, usuario.Email, token);
+
+            return Ok(new { mensagem = "E-mail de redefinição enviado com sucesso." });
+        }
+
+
+
+
+
+
+
+
+
         [HttpPut("Atualizar-medico-pelo/{id}")]
         public async Task<IActionResult> AtualizarDadosBasicosMedico(string id, [FromBody] AtualizarDadosMedicoDTO dto)
         {
@@ -211,7 +293,7 @@ namespace VittaMais.API.Controllers
             }
         }
 
-       
+
 
         [HttpPut("Atualizar-paciente-pelo/{id}")]
         public async Task<IActionResult> AtualizarDadosBasicos(string id, [FromBody] AtualizarDadosPacienteDto dto)
@@ -262,7 +344,7 @@ namespace VittaMais.API.Controllers
 
 
         [HttpGet("listar-usuarios-por-email")]
-        public async Task<IActionResult> ListarUsuariosPorEmail( string email)
+        public async Task<IActionResult> ListarUsuariosPorEmail(string email)
         {
             var usuarios = await _usuarioService.BuscarUsuarioPorEmail(email);
             return Ok(usuarios);
@@ -282,8 +364,8 @@ namespace VittaMais.API.Controllers
         }
 
 
-       [HttpGet("listar-Pacientes")]
-       public async Task<IActionResult> ListarPacientes()
+        [HttpGet("listar-Pacientes")]
+        public async Task<IActionResult> ListarPacientes()
         {
             var pacientes = await _usuarioService.ListarPacientes();
 
@@ -304,6 +386,21 @@ namespace VittaMais.API.Controllers
 
         //    return Ok(new { mensagem = "Token de recuperação enviado com sucesso." });
         //}
+
+        [HttpGet("teste-envio-email")]
+        public async Task<IActionResult> TestarEnvioEmail()
+        {
+            try
+            {
+                await _emailService.TestarEnvioEmail();
+                return Ok(new { mensagem = "Email de teste enviado. Verifique sua caixa de entrada." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = "Erro ao enviar email de teste.", erro = ex.Message });
+            }
+        }
+
 
     }
 }

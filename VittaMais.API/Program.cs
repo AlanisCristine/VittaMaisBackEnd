@@ -20,6 +20,8 @@ builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<EspecialidadeService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddSingleton<TokenService>();
+
 
 
 

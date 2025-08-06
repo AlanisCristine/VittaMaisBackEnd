@@ -7,7 +7,7 @@ public class EmailService
     private readonly string _smtpServer = "smtp.gmail.com";
     private readonly int _smtpPort = 587;
     private readonly string _smtpUser = "vivabemclinicamed@gmail.com"; // seu email do Gmail
-    private readonly string _smtpPass = "kaxf cmry pfix ltof"; // a senha de app
+    private readonly string _smtpPass = "qneubhpcjtseaeqw"; // a senha de app
 
     public async Task EnviarEmailConsultaAsync(string nomePaciente, string emailPaciente, string especialidade, string medico, DateTime dataConsulta)
     {
@@ -89,6 +89,43 @@ public class EmailService
         await cliente.AuthenticateAsync(_smtpUser, _smtpPass);
         await cliente.SendAsync(mensagem);
         await cliente.DisconnectAsync(true);
+    }
+
+    public async Task EnviarEmailRecuperacaoSenhaAsync(string nomeUsuario, string emailUsuario, string token)
+    {
+        var mensagem = new MimeMessage();
+        mensagem.From.Add(new MailboxAddress("Vitta+", _smtpUser));
+        mensagem.To.Add(new MailboxAddress(nomeUsuario, emailUsuario));
+        mensagem.Subject = "Recuperação de Senha - Vitta+";
+
+        mensagem.Body = new TextPart("plain")
+        {
+            Text = $"Olá! Use este token para redefinir sua senha:\n\n{token}\n\nDigite este código na página de redefinição."
+        };
+
+        using var cliente = new SmtpClient();
+        await cliente.ConnectAsync(_smtpServer, _smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
+        await cliente.AuthenticateAsync(_smtpUser, _smtpPass);
+        await cliente.SendAsync(mensagem);
+        await cliente.DisconnectAsync(true);
+    }
+
+
+
+
+    public async Task TestarEnvioEmail()
+    {
+        var mensagem = new MimeMessage();
+        mensagem.From.Add(new MailboxAddress("Teste", _smtpUser));
+        mensagem.To.Add(MailboxAddress.Parse("alanisalmeidads@gmail.com"));
+        mensagem.Subject = "Teste de envio";
+        mensagem.Body = new TextPart("plain") { Text = "Funcionou o envio de email!" };
+
+        using var smtp = new SmtpClient();
+        await smtp.ConnectAsync(_smtpServer, _smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
+        await smtp.AuthenticateAsync(_smtpUser, _smtpPass);
+        await smtp.SendAsync(mensagem);
+        await smtp.DisconnectAsync(true);
     }
 
 }
