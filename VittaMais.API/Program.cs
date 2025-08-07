@@ -1,9 +1,10 @@
-using CloudinaryDotNet;
+ï»¿using CloudinaryDotNet;
 using VittaMais.API;
 using VittaMais.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar Cloudinary
 builder.Services.AddSingleton(_ =>
 {
     Account account = new Account(
@@ -14,7 +15,7 @@ builder.Services.AddSingleton(_ =>
     return new Cloudinary(account);
 });
 
-// Registrar dependências antes de chamar builder.Build()
+// ServiÃ§os
 builder.Services.AddScoped<FirebaseService>();
 builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<ConsultaService>();
@@ -22,40 +23,40 @@ builder.Services.AddScoped<EspecialidadeService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddSingleton<TokenService>();
 
-
-
-
-
-
-// Registrar outros serviços
+// Controllers e Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configuração do CORS
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("PermitirTudo",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
+    options.AddPolicy("PermitirTudo", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
 var app = builder.Build();
 
-// Usar o Swagger
+// ðŸ”½ Ordem do middleware importa muito! ðŸ”½
+
+// Swagger deve vir primeiro
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Permite requisições de qualquer origem (CORS)
+// CORS deve vir antes de Authorization e MapControllers
 app.UseCors("PermitirTudo");
 
+// Se vocÃª for usar autenticaÃ§Ã£o, adicione antes do Authorization:
+// app.UseAuthentication(); 
 
-// Configuração de autorização e mapeamento de controladores
+// Authorization
 app.UseAuthorization();
+
+// Controllers
 app.MapControllers();
 
 app.Run();
