@@ -17,7 +17,7 @@ namespace VittaMais.API.Services
         //private readonly List<TokenRecuperacao> _tokens = new();
         private readonly TokenService _tokenService;
 
-        
+
 
 
 
@@ -218,10 +218,10 @@ namespace VittaMais.API.Services
         public async Task AtualizarSenha(string id, string novaSenha)
         {
             await _firebase
-                .Child("usuarios")
-                .Child(id)
-                .Child("senha")
-                .PutAsync(novaSenha);
+     .Child("usuarios")
+     .Child(id)
+     .Child("senha")
+     .PutAsync(JsonConvert.SerializeObject(novaSenha));
         }
 
         public async Task AtualizarDadosBasicosAsync(string id, AtualizarDadosPacienteDto dto)
@@ -333,55 +333,55 @@ namespace VittaMais.API.Services
 
         public async Task AtualizarAsync(string id, Usuario usuario)
         {
-               await _firebase
-                .Child("usuarios")
-                .Child(id)
-                .PutAsync(usuario);
+            await _firebase
+             .Child("usuarios")
+             .Child(id)
+             .PutAsync(usuario);
         }
 
-    //    public async Task SolicitarRecuperacaoSenhaAsync(string email)
-    //    {
-    //        // 1. Buscar usuário
-    //        var usuarios = await _firebase.Child("usuarios").OnceAsync<Usuario>();
-    //        var usuario = usuarios.FirstOrDefault(u => u.Object.Email == email);
+        //    public async Task SolicitarRecuperacaoSenhaAsync(string email)
+        //    {
+        //        // 1. Buscar usuário
+        //        var usuarios = await _firebase.Child("usuarios").OnceAsync<Usuario>();
+        //        var usuario = usuarios.FirstOrDefault(u => u.Object.Email == email);
 
-    //        if (usuario == null)
-    //            throw new Exception("E-mail não encontrado.");
+        //        if (usuario == null)
+        //            throw new Exception("E-mail não encontrado.");
 
-    //        // 2. Criar token
-    //        var token = Guid.NewGuid().ToString();
-    //        var tokenInfo = new TokenRecuperacaoSenha
-    //        {
-    //            Token = token,
-    //            UsuarioId = usuario.Key,
-    //            CriadoEm = DateTime.UtcNow,
-    //            Usado = false
-    //        };
+        //        // 2. Criar token
+        //        var token = Guid.NewGuid().ToString();
+        //        var tokenInfo = new TokenRecuperacaoSenha
+        //        {
+        //            Token = token,
+        //            UsuarioId = usuario.Key,
+        //            CriadoEm = DateTime.UtcNow,
+        //            Usado = false
+        //        };
 
-    //        await _firebase.Child("tokens_recuperacao").Child(token).PutAsync(tokenInfo);
+        //        await _firebase.Child("tokens_recuperacao").Child(token).PutAsync(tokenInfo);
 
-    //        // 3. Montar link com token
-    //        var link = $"https://seusite.com/recuperar-senha?token={token}";
+        //        // 3. Montar link com token
+        //        var link = $"https://seusite.com/recuperar-senha?token={token}";
 
-    //        // 4. E-mail HTML estilizado
-    //        string emailHtml = $@"
-    //    <html>
-    //        <body style='font-family: Arial; background-color: #f6f6f6; padding: 20px;'>
-    //            <div style='max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px;'>
-    //                <h2 style='color: #2b7bff;'>Recuperação de Senha - Vitta+</h2>
-    //                <p>Olá <strong>{usuario.Object.Nome}</strong>,</p>
-    //                <p>Você solicitou a recuperação de senha. Clique no botão abaixo para redefinir:</p>
-    //                <a href='{link}' style='background-color: #2b7bff; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block;'>Redefinir senha</a>
-    //                <p style='margin-top: 20px;'>Se você não solicitou isso, ignore este e-mail.</p>
-    //                <p style='color: gray; font-size: 12px;'>Válido por 30 minutos.</p>
-    //            </div>
-    //        </body>
-    //    </html>
-    //";
+        //        // 4. E-mail HTML estilizado
+        //        string emailHtml = $@"
+        //    <html>
+        //        <body style='font-family: Arial; background-color: #f6f6f6; padding: 20px;'>
+        //            <div style='max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px;'>
+        //                <h2 style='color: #2b7bff;'>Recuperação de Senha - Vitta+</h2>
+        //                <p>Olá <strong>{usuario.Object.Nome}</strong>,</p>
+        //                <p>Você solicitou a recuperação de senha. Clique no botão abaixo para redefinir:</p>
+        //                <a href='{link}' style='background-color: #2b7bff; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block;'>Redefinir senha</a>
+        //                <p style='margin-top: 20px;'>Se você não solicitou isso, ignore este e-mail.</p>
+        //                <p style='color: gray; font-size: 12px;'>Válido por 30 minutos.</p>
+        //            </div>
+        //        </body>
+        //    </html>
+        //";
 
-    //        // 5. Enviar com Brevo
-    //        //await _emailService.EnviarEmailAsync(email, "Recuperação de Senha - Vitta+", emailHtml, true);  true = isHtml
-    //    }
+        //        // 5. Enviar com Brevo
+        //        //await _emailService.EnviarEmailAsync(email, "Recuperação de Senha - Vitta+", emailHtml, true);  true = isHtml
+        //    }
 
         //public async Task<bool> EnviarTokenRecuperacaoAsync(string email)
         //{

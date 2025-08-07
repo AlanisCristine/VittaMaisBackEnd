@@ -211,9 +211,9 @@ namespace VittaMais.API.Controllers
         }
 
         [HttpPost("redefinir-senha")]
-        public async Task<IActionResult> RedefinirSenha(string token, [FromBody] string novaSenha)
+        public async Task<IActionResult> RedefinirSenha([FromBody] RedefinirSenhaDto dto)
         {
-            var principal = _tokenService.ValidarToken(token);
+            var principal = _tokenService.ValidarToken(dto.Token);
             if (principal == null)
                 return BadRequest(new { mensagem = "Token inválido ou expirado." });
 
@@ -222,11 +222,12 @@ namespace VittaMais.API.Controllers
             if (usuario == null)
                 return NotFound(new { mensagem = "Usuário não encontrado." });
 
-            var senhaCriptografada = BCrypt.Net.BCrypt.HashPassword(novaSenha);
+            var senhaCriptografada = BCrypt.Net.BCrypt.HashPassword(dto.NovaSenha);
             await _usuarioService.AtualizarSenha(usuario.Id, senhaCriptografada);
 
             return Ok(new { mensagem = "Senha redefinida com sucesso." });
         }
+
 
         [HttpPost("solicitar-redefinicao-senha")]
         public async Task<IActionResult> SolicitarRedefinicaoSenha([FromBody] RecuperarSenhaDto dto)
